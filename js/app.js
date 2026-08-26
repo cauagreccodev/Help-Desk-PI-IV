@@ -401,13 +401,8 @@ const App = (() => {
 
   // ── Event Bindings ──
   function bindGlobalEvents() {
-    // Sidebar toggle
+    // Mobile & overlay events
     document.addEventListener('click', (e) => {
-      const toggleBtn = e.target.closest('#sidebarToggle');
-      if (toggleBtn) {
-        document.getElementById('sidebar').classList.toggle('collapsed');
-      }
-
       // Mobile menu
       const menuBtn = e.target.closest('#mobileMenuBtn');
       if (menuBtn) {

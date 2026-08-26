@@ -273,7 +273,8 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   transition: background-color var(--transition-theme), border-color var(--transition-theme);
 }
 
@@ -355,6 +356,8 @@
 
 .data-table {
   width: 100%;
+  min-width: 900px;
+  table-layout: auto;
 }
 
 .data-table thead {
@@ -420,12 +423,17 @@
 
 .table-cell-title {
   font-weight: var(--weight-medium);
-  max-width: 280px;
+  max-width: 260px;
+  min-width: 160px;
 }
 
 .table-cell-title a {
   color: var(--color-text);
   transition: color var(--transition-fast);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .table-cell-title a:hover {

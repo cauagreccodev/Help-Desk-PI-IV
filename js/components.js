@@ -51,10 +51,7 @@ function renderSidebar() {
         <div class="sidebar__logo-icon">${Icons.headphones}</div>
         <div class="sidebar__logo-text">Help<span>Desk</span></div>
       </div>
-      
-      <button class="sidebar__toggle" id="sidebarToggle" title="Recolher menu">
-        ${Icons.chevronLeft}
-      </button>
+
 
       <nav class="sidebar__nav">
         <div class="sidebar__section-title">Principal</div>
