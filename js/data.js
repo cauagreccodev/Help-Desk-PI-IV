@@ -525,6 +525,79 @@ let chamados = [
 // ── Usuário logado (simulação) ──
 const CURRENT_USER = USERS.find(u => u.id === 2); // Ana Beatriz - Admin
 
+// ── Notificações (dados fictícios para teste) ──
+let notificacoes = [
+  {
+    id: 1,
+    tipo: 'chamado_novo',
+    titulo: 'Novo chamado aberto',
+    mensagem: 'Juliana Costa abriu o chamado #0001 — Computador não liga após queda de energia.',
+    chamadoId: 1,
+    lida: false,
+    criadaEm: '2026-08-15T09:30:00'
+  },
+  {
+    id: 2,
+    tipo: 'status_alterado',
+    titulo: 'Status alterado',
+    mensagem: 'O chamado #0002 foi movido para "Em Andamento" por Carlos Mendes.',
+    chamadoId: 2,
+    lida: false,
+    criadaEm: '2026-08-15T11:00:00'
+  },
+  {
+    id: 3,
+    tipo: 'comentario',
+    titulo: 'Novo comentário',
+    mensagem: 'Rafael Oliveira comentou no chamado #0005 — VPN corporativa desconectando.',
+    chamadoId: 5,
+    lida: false,
+    criadaEm: '2026-08-15T10:20:00'
+  },
+  {
+    id: 4,
+    tipo: 'atribuicao',
+    titulo: 'Chamado atribuído a você',
+    mensagem: 'O chamado #0007 — Lentidão na rede Wi-Fi do 2º andar foi atribuído à sua equipe.',
+    chamadoId: 7,
+    lida: false,
+    criadaEm: '2026-08-15T13:05:00'
+  },
+  {
+    id: 5,
+    tipo: 'sla_alerta',
+    titulo: 'Alerta de SLA',
+    mensagem: 'O chamado #0010 — E-mail corporativo não recebe mensagens está próximo do vencimento do SLA.',
+    chamadoId: 10,
+    lida: true,
+    criadaEm: '2026-08-15T15:00:00'
+  },
+  {
+    id: 6,
+    tipo: 'resolvido',
+    titulo: 'Chamado resolvido',
+    mensagem: 'Carlos Mendes resolveu o chamado #0008 — Reset de senha - conta bloqueada.',
+    chamadoId: 8,
+    lida: true,
+    criadaEm: '2026-08-15T07:30:00'
+  }
+];
+
+// ── Helpers de Notificações ──
+function getUnreadNotificationsCount() {
+  return notificacoes.filter(n => !n.lida).length;
+}
+
+function markNotificationAsRead(id) {
+  const notif = notificacoes.find(n => n.id === id);
+  if (notif) notif.lida = true;
+}
+
+function markAllNotificationsAsRead() {
+  notificacoes.forEach(n => n.lida = true);
+}
+
+
 // ── Helper: próximo ID ──
 function getNextId() {
   return chamados.length > 0 ? Math.max(...chamados.map(c => c.id)) + 1 : 1;

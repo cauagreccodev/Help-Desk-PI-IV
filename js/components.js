@@ -88,6 +88,7 @@ function renderSidebar() {
 // ── Componente: Header ──
 function renderHeader(breadcrumbs) {
   const themeIcon = ThemeManager.isDark() ? Icons.sun : Icons.moon;
+  const unreadCount = getUnreadNotificationsCount();
   return `
     <header class="header">
       <div class="header__left">
@@ -111,15 +112,98 @@ function renderHeader(breadcrumbs) {
         <button class="header__icon-btn" id="themeToggleBtn" title="Alternar tema">
           ${themeIcon}
         </button>
-        <button class="header__icon-btn" title="Notificações">
-          ${Icons.bell}
-          <span class="notification-dot"></span>
-        </button>
-        <div class="header__avatar" title="${CURRENT_USER.nome}">${CURRENT_USER.iniciais}</div>
+        <div class="header__dropdown-wrapper">
+          <button class="header__icon-btn" id="notificationsBtn" title="Notificações">
+            ${Icons.bell}
+            ${unreadCount > 0 ? '<span class="notification-dot"></span>' : ''}
+          </button>
+          <div class="header__dropdown header__dropdown--notifications" id="notificationsDropdown">
+            <div class="dropdown__header">
+              <h3 class="dropdown__title">Notificações</h3>
+              ${unreadCount > 0 ? `<button class="dropdown__action" id="markAllReadBtn">${unreadCount} não lida${unreadCount > 1 ? 's' : ''} — Marcar todas</button>` : '<span class="dropdown__action-muted">Tudo lido</span>'}
+            </div>
+            <div class="dropdown__list" id="notificationsList">
+              ${renderNotificationsList()}
+            </div>
+          </div>
+        </div>
+        <div class="header__dropdown-wrapper">
+          <div class="header__avatar" id="profileBtn" title="${CURRENT_USER.nome}">${CURRENT_USER.iniciais}</div>
+          <div class="header__dropdown header__dropdown--profile" id="profileDropdown">
+            <div class="dropdown__profile-header">
+              <div class="dropdown__profile-avatar">${CURRENT_USER.iniciais}</div>
+              <div class="dropdown__profile-info">
+                <div class="dropdown__profile-name">${CURRENT_USER.nome}</div>
+                <div class="dropdown__profile-email">${CURRENT_USER.email}</div>
+              </div>
+            </div>
+            <div class="dropdown__divider"></div>
+            <div class="dropdown__menu">
+              <button class="dropdown__menu-item" id="profileGoSettings">
+                ${Icons.settings}
+                <span>Configurações</span>
+              </button>
+              <button class="dropdown__menu-item" id="profileGoUser">
+                ${Icons.user}
+                <span>Meu Perfil</span>
+              </button>
+            </div>
+            <div class="dropdown__divider"></div>
+            <div class="dropdown__footer">
+              <span class="dropdown__footer-role">${Icons.shieldCheck} ${CURRENT_USER.perfil === 'admin' ? 'Administrador' : CURRENT_USER.perfil === 'tecnico' ? 'Técnico' : 'Usuário'}</span>
+              <span class="dropdown__footer-dept">${CURRENT_USER.departamento}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </header>
   `;
 }
+
+// ── Componente: Lista de Notificações ──
+function renderNotificationsList() {
+  if (notificacoes.length === 0) {
+    return `<div class="dropdown__empty">
+      ${Icons.bell}
+      <p>Nenhuma notificação</p>
+    </div>`;
+  }
+
+  const notifIconMap = {
+    chamado_novo: Icons.plus,
+    status_alterado: Icons.tag,
+    comentario: Icons.messageSquare,
+    atribuicao: Icons.user,
+    sla_alerta: Icons.alertCircle,
+    resolvido: Icons.checkCircle
+  };
+
+  const notifColorMap = {
+    chamado_novo: 'notif--info',
+    status_alterado: 'notif--warning',
+    comentario: 'notif--primary',
+    atribuicao: 'notif--primary',
+    sla_alerta: 'notif--danger',
+    resolvido: 'notif--success'
+  };
+
+  return notificacoes
+    .sort((a, b) => new Date(b.criadaEm) - new Date(a.criadaEm))
+    .map(n => `
+      <div class="dropdown__notif-item ${n.lida ? '' : 'dropdown__notif-item--unread'}" data-notif-id="${n.id}" data-chamado-id="${n.chamadoId}">
+        <div class="dropdown__notif-icon ${notifColorMap[n.tipo] || 'notif--primary'}">
+          ${notifIconMap[n.tipo] || Icons.bell}
+        </div>
+        <div class="dropdown__notif-content">
+          <div class="dropdown__notif-title">${n.titulo}</div>
+          <p class="dropdown__notif-message">${n.mensagem}</p>
+          <span class="dropdown__notif-time">${formatTimeAgo(n.criadaEm)}</span>
+        </div>
+        ${!n.lida ? '<div class="dropdown__notif-unread-dot"></div>' : ''}
+      </div>
+    `).join('');
+}
+
 
 // ── View: Dashboard ──
 function renderDashboard() {

@@ -451,6 +451,85 @@ const App = (() => {
       });
     }
 
+    // ── Dropdown Toggle Logic ──
+    function closeAllDropdowns() {
+      document.querySelectorAll('.header__dropdown.open').forEach(d => d.classList.remove('open'));
+    }
+
+    // Notifications dropdown
+    const notifBtn = document.getElementById('notificationsBtn');
+    const notifDropdown = document.getElementById('notificationsDropdown');
+    if (notifBtn && notifDropdown) {
+      notifBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = notifDropdown.classList.contains('open');
+        closeAllDropdowns();
+        if (!isOpen) notifDropdown.classList.add('open');
+      });
+    }
+
+    // Profile dropdown
+    const profileBtn = document.getElementById('profileBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+    if (profileBtn && profileDropdown) {
+      profileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = profileDropdown.classList.contains('open');
+        closeAllDropdowns();
+        if (!isOpen) profileDropdown.classList.add('open');
+      });
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.header__dropdown-wrapper')) {
+        closeAllDropdowns();
+      }
+    });
+
+    // Mark all notifications as read
+    const markAllBtn = document.getElementById('markAllReadBtn');
+    if (markAllBtn) {
+      markAllBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (typeof markAllNotificationsRead === 'function') {
+          markAllNotificationsRead();
+        }
+        // Refresh the header to update notification state
+        refreshCurrentView();
+      });
+    }
+
+    // Notification items — navigate to chamado
+    document.querySelectorAll('.dropdown__notif-item[data-chamado-id]').forEach(item => {
+      item.addEventListener('click', () => {
+        const chamadoId = item.getAttribute('data-chamado-id');
+        const notifId = item.getAttribute('data-notif-id');
+        if (notifId && typeof markNotificationRead === 'function') {
+          markNotificationRead(parseInt(notifId));
+        }
+        closeAllDropdowns();
+        if (chamadoId) Router.navigate(`#chamado/${chamadoId}`);
+      });
+    });
+
+    // Profile menu items
+    const profileGoSettings = document.getElementById('profileGoSettings');
+    if (profileGoSettings) {
+      profileGoSettings.addEventListener('click', () => {
+        closeAllDropdowns();
+        Router.navigate('#configuracoes');
+      });
+    }
+
+    const profileGoUser = document.getElementById('profileGoUser');
+    if (profileGoUser) {
+      profileGoUser.addEventListener('click', () => {
+        closeAllDropdowns();
+        Router.navigate('#configuracoes');
+      });
+    }
+
     // Global search
     const globalSearch = document.getElementById('globalSearch');
     if (globalSearch) {
