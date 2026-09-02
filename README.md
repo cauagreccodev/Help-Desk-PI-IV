@@ -1,4 +1,4 @@
-# 🎫 HelpDesk — Sistema de Chamados de TI
+# HelpDesk — Sistema de Chamados de TI
 
 > **Projeto Integrador IV** — Sistema de gerenciamento de chamados de suporte técnico com painel administrativo, fluxo de status em tempo real e notificações via Socket TCP.
 
@@ -12,7 +12,7 @@
 
 ---
 
-## 📋 Sobre o Projeto
+## Sobre o Projeto
 
 Sistema Help Desk corporativo que permite:
 
@@ -29,7 +29,7 @@ NEW → ASSIGNED → CLOSED
 
 ---
 
-## 🏗️ Arquitetura
+## Arquitetura
 
 O sistema é dividido em **3 contêineres Docker** independentes:
 
@@ -52,11 +52,11 @@ O sistema é dividido em **3 contêineres Docker** independentes:
 └─────────────────────────────────────────────────────────┘
 ```
 
-> Documentação completa: [`backend_architecture.md`](./backend_architecture.md) · [`database_modeling.md`](./database_modeling.md)
+> Documentação completa: [`docs/backend_architecture.md`](./docs/backend_architecture.md) · [`docs/database_modeling.md`](./docs/database_modeling.md)
 
 ---
 
-## 🛠️ Stack Tecnológica
+## Stack Tecnológica
 
 | Camada | Tecnologia |
 |:---|:---|
@@ -71,7 +71,7 @@ O sistema é dividido em **3 contêineres Docker** independentes:
 
 ---
 
-## 📁 Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
 Help-Desk-PI-IV/
@@ -100,14 +100,15 @@ Help-Desk-PI-IV/
 │   │   ├── postgresql.jar
 │   │   └── gson.jar
 │   └── src/                    # Código-fonte Java (a implementar)
-├── backend_architecture.md     # Documentação da arquitetura
-├── database_modeling.md        # Modelagem e dicionário de dados
+├── docs/
+│   ├── backend_architecture.md # Documentação da arquitetura
+│   └── database_modeling.md    # Modelagem e dicionário de dados
 └── docker-compose.yml          # Orquestração local (a criar)
 ```
 
 ---
 
-## 🚀 Como Rodar Localmente
+## Como Rodar Localmente
 
 ### Pré-requisitos
 
@@ -138,7 +139,7 @@ npx -y serve .
 
 ---
 
-## 🌐 Deploy (Produção)
+## Deploy (Produção)
 
 | Componente | Plataforma | URL |
 |:---|:---|:---|
@@ -149,7 +150,7 @@ npx -y serve .
 
 ---
 
-## 🗄️ Banco de Dados
+## Banco de Dados
 
 5 tabelas principais:
 
@@ -161,16 +162,16 @@ npx -y serve .
 | `ticket_timeline` | Histórico de eventos do chamado |
 | `notifications` | Notificações do sistema |
 
-> Dicionário de dados completo em [`database_modeling.md`](./database_modeling.md)
+> Dicionário de dados completo em [`docs/database_modeling.md`](./docs/database_modeling.md)
 
 ---
 
-## 👥 Equipe
+## Equipe
 
 Projeto Integrador IV — Curso de Análise e Desenvolvimento de Sistemas
 
 ---
 
-## 📄 Licença
+## Licença
 
 Este projeto é de uso acadêmico.
