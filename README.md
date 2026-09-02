@@ -108,37 +108,6 @@ Help-Desk-PI-IV/
 
 ---
 
-## Como Rodar Localmente
-
-### Pré-requisitos
-
-- [JDK 21+](https://adoptium.net/)
-- [Docker](https://docs.docker.com/get-docker/) e Docker Compose
-
-### 1. Subir o banco de dados
-
-```bash
-docker compose up db -d
-```
-
-### 2. Compilar e rodar o backend (exemplo para a API)
-
-```bash
-cd backend-api
-javac -cp "lib/*" -d out $(find src -name "*.java")
-java -cp "lib/*:out" com.helpdesk.api.Main
-```
-
-### 3. Abrir o frontend
-
-Basta abrir o `index.html` no navegador ou usar um servidor local:
-
-```bash
-npx -y serve .
-```
-
----
-
 ## Deploy (Produção)
 
 | Componente | Plataforma | URL |
