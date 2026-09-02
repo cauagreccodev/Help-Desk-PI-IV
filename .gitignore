@@ -9,6 +9,7 @@ node_modules/
 .DS_Store
 Thumbs.db
 desktop.ini
+.venv/
 
 # Logs
 *.log
@@ -16,4 +17,3 @@ desktop.ini
 # Documentação
 
 # Banco de dados
-create_tables.py
