@@ -100,7 +100,6 @@ Help-Desk-PI-IV/
 │   │   ├── postgresql.jar
 │   │   └── gson.jar
 │   └── src/                    # Código-fonte Java (a implementar)
-├── create_tables.py            # Script de criação das tabelas no banco
 ├── backend_architecture.md     # Documentação da arquitetura
 ├── database_modeling.md        # Modelagem e dicionário de dados
 └── docker-compose.yml          # Orquestração local (a criar)
@@ -114,7 +113,6 @@ Help-Desk-PI-IV/
 
 - [JDK 21+](https://adoptium.net/)
 - [Docker](https://docs.docker.com/get-docker/) e Docker Compose
-- [Python 3](https://www.python.org/) (para o script de criação de tabelas)
 
 ### 1. Subir o banco de dados
 
@@ -122,13 +120,7 @@ Help-Desk-PI-IV/
 docker compose up db -d
 ```
 
-### 2. Criar as tabelas
-
-```bash
-python3 create_tables.py
-```
-
-### 3. Compilar e rodar o backend (exemplo para a API)
+### 2. Compilar e rodar o backend (exemplo para a API)
 
 ```bash
 cd backend-api
@@ -136,7 +128,7 @@ javac -cp "lib/*" -d out $(find src -name "*.java")
 java -cp "lib/*:out" com.helpdesk.api.Main
 ```
 
-### 4. Abrir o frontend
+### 3. Abrir o frontend
 
 Basta abrir o `index.html` no navegador ou usar um servidor local:
 
