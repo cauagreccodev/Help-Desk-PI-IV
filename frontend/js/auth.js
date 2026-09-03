@@ -11,6 +11,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // API URL BASE
     const API_URL = 'http://localhost:8000/api';
 
+    // Mostra mensagem de sucesso se veio do cadastro
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('registered') === 'true') {
+        const successDiv = document.createElement('div');
+        successDiv.className = 'success-message';
+        successDiv.textContent = 'Conta criada com sucesso! Faca login para continuar.';
+        loginForm.insertBefore(successDiv, loginForm.firstChild);
+    }
+
     // ── Handler Login ──
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();

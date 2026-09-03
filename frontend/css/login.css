@@ -179,3 +179,40 @@ form {
     text-align: center;
     display: none;
 }
+
+.success-message {
+    color: var(--color-success);
+    background-color: var(--color-success-bg);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+    font-size: var(--text-sm);
+    text-align: center;
+    margin-bottom: var(--space-4);
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: var(--space-6);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border);
+}
+
+.auth-footer span {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+}
+
+.auth-footer a {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--color-primary);
+    text-decoration: none;
+    margin-left: var(--space-1);
+    transition: color var(--transition-fast);
+}
+
+.auth-footer a:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
