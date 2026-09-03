@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HelpDesk - Login / Cadastro</title>
+    <title>HelpDesk - Login</title>
     
     <!-- Estilos -->
     <link rel="stylesheet" href="css/variables.css">
@@ -14,82 +14,39 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-card" id="authCard">
-            <!-- Painel de Login -->
-            <div class="form-container sign-in-container">
-                <form id="loginForm">
-                    <div class="brand">
-                        <i data-lucide="ticket"></i>
-                        <h1>HelpDesk</h1>
-                    </div>
-                    <h2>Acesse sua conta</h2>
-                    <span>Use seu e-mail e senha corporativos</span>
-                    
-                    <div class="input-group">
-                        <i data-lucide="mail"></i>
-                        <input type="email" id="loginEmail" placeholder="E-mail" required />
-                    </div>
-                    <div class="input-group">
-                        <i data-lucide="lock"></i>
-                        <input type="password" id="loginPassword" placeholder="Senha" required />
-                    </div>
-                    
-                    <div class="error-message" id="loginError"></div>
-                    
-                    <a href="#" class="forgot-password">Esqueceu sua senha?</a>
-                    <button type="submit" class="btn-primary" id="btnLogin">Entrar</button>
-                </form>
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div class="brand">
+                <i data-lucide="ticket"></i>
+                <h1>HelpDesk</h1>
             </div>
-
-            <!-- Painel de Cadastro -->
-            <div class="form-container sign-up-container">
-                <form id="registerForm">
-                    <h2>Criar Conta</h2>
-                    <span>Registre-se no sistema</span>
-                    
-                    <div class="input-group">
-                        <i data-lucide="user"></i>
-                        <input type="text" id="regName" placeholder="Nome Completo" required />
-                    </div>
-                    <div class="input-group">
-                        <i data-lucide="mail"></i>
-                        <input type="email" id="regEmail" placeholder="E-mail" required />
-                    </div>
-                    <div class="input-group">
-                        <i data-lucide="briefcase"></i>
-                        <input type="text" id="regJobTitle" placeholder="Cargo" required />
-                    </div>
-                    <div class="input-group">
-                        <i data-lucide="building"></i>
-                        <input type="text" id="regDepartment" placeholder="Departamento" required />
-                    </div>
-                    <div class="input-group">
-                        <i data-lucide="lock"></i>
-                        <input type="password" id="regPassword" placeholder="Senha" required />
-                    </div>
-                    
-                    <div class="error-message" id="registerError"></div>
-                    
-                    <button type="submit" class="btn-primary" id="btnRegister">Cadastrar</button>
-                </form>
+            
+            <div class="login-header">
+                <h2>Acesse sua conta</h2>
+                <p>Use seu e-mail e senha corporativos para entrar no sistema.</p>
             </div>
-
-            <!-- Overlay de Transição Animada -->
-            <div class="overlay-container">
-                <div class="overlay">
-                    <div class="overlay-panel overlay-left">
-                        <h2>Já tem uma conta?</h2>
-                        <p>Para se manter conectado conosco, faça login com suas informações pessoais</p>
-                        <button class="btn-ghost" id="signInGhost">Entrar</button>
-                    </div>
-                    <div class="overlay-panel overlay-right">
-                        <h2>Novo por aqui?</h2>
-                        <p>Insira seus dados pessoais e comece sua jornada no HelpDesk</p>
-                        <button class="btn-ghost" id="signUpGhost">Criar Conta</button>
+            
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="loginEmail">E-mail Corporativo</label>
+                    <div class="input-field">
+                        <i data-lucide="mail"></i>
+                        <input type="email" id="loginEmail" placeholder="nome@empresa.com.br" required />
                     </div>
                 </div>
-            </div>
+                
+                <div class="input-group">
+                    <label for="loginPassword">Senha</label>
+                    <div class="input-field">
+                        <i data-lucide="lock"></i>
+                        <input type="password" id="loginPassword" placeholder="••••••••" required />
+                    </div>
+                </div>
+                
+                <div class="error-message" id="loginError"></div>
+                
+                <button type="submit" class="btn-primary" id="btnLogin">Entrar no HelpDesk</button>
+            </form>
         </div>
     </div>
 
