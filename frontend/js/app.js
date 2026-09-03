@@ -628,5 +628,24 @@ const App = (() => {
   };
 })();
 
-// ── Bootstrap ──
-document.addEventListener('DOMContentLoaded', App.init);
+// ── Inicialização e Route Guard ──
+document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // O usuário está logado, podemos carregar os dados
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+        try {
+            const user = JSON.parse(userStr);
+            // Atualiza o CURRENT_USER globalmente
+            window.CURRENT_USER = user;
+        } catch (e) {
+            console.error("Erro ao fazer parse do usuário", e);
+        }
+    }
+    App.init();
+});

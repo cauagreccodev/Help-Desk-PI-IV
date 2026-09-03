@@ -75,19 +75,23 @@ O sistema é dividido em **3 contêineres Docker** independentes:
 
 ```
 Help-Desk-PI-IV/
-├── index.html                  # Página principal do frontend
-├── css/
-│   ├── variables.css           # Design tokens e variáveis CSS
-│   ├── base.css                # Reset e estilos globais
-│   ├── layout.css              # Grid e estrutura de layout
-│   ├── components.css          # Componentes da UI
-│   └── animations.css          # Transições e animações
-├── js/
-│   ├── data.js                 # Dados mockados e constantes
-│   ├── theme.js                # Alternância de tema (light/dark)
-│   ├── router.js               # Roteamento SPA client-side
-│   ├── components.js           # Componentes renderizados via JS
-│   └── app.js                  # Inicialização da aplicação
+├── frontend/
+│   ├── index.html              # Dashboard do frontend
+│   ├── login.html              # Tela de Login e Cadastro
+│   ├── css/
+│   │   ├── variables.css       # Design tokens e variáveis CSS
+│   │   ├── base.css            # Reset e estilos globais
+│   │   ├── layout.css          # Grid e estrutura de layout
+│   │   ├── components.css      # Componentes da UI
+│   │   ├── animations.css      # Transições e animações
+│   │   └── login.css           # Estilos da tela de login
+│   └── js/
+│       ├── data.js             # Dados mockados e estrutura
+│       ├── theme.js            # Alternância de tema (light/dark)
+│       ├── router.js           # Roteamento SPA client-side
+│       ├── components.js       # Componentes renderizados via JS
+│       ├── auth.js             # Lógica de login/cadastro e requests API
+│       └── app.js              # Inicialização da aplicação
 ├── backend-api/                # Contêiner 1: API REST
 │   ├── Dockerfile
 │   ├── lib/
@@ -104,6 +108,13 @@ Help-Desk-PI-IV/
 │   ├── backend_architecture.md # Documentação da arquitetura
 │   └── database_modeling.md    # Modelagem e dicionário de dados
 └── docker-compose.yml          # Orquestração local (a criar)
+```
+
+Basta abrir o `frontend/login.html` no navegador ou usar um servidor local:
+
+```bash
+cd frontend
+npx -y serve .
 ```
 
 ---
