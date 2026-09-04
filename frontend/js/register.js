@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnRegister = document.getElementById('btnRegister');
 
     // API URL BASE
-    const API_URL = 'http://localhost:8000/api';
+    const API_URL = 'https://help-desk-pi-iv.onrender.com';
 
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();

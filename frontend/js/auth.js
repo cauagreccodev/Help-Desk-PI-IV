@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnLogin = document.getElementById('btnLogin');
 
     // API URL BASE
-    const API_URL = 'http://localhost:8000/api';
+    const API_URL = 'https://help-desk-pi-iv.onrender.com';
 
     // Mostra mensagem de sucesso se veio do cadastro
     const params = new URLSearchParams(window.location.search);
