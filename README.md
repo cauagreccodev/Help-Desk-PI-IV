@@ -148,7 +148,7 @@ npx -y serve .
 
 ## Equipe
 
-Projeto Integrador IV — Curso de Análise e Desenvolvimento de Sistemas
+Projeto Integrador IV — Curso de Análise e Desenvolvimento de Sistemas.
 
 ---
 
