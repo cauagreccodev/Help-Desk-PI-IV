@@ -17,7 +17,7 @@ public class Database {
     private static final String DB_USER = System.getenv().getOrDefault(
             "DB_USER", "root");
     private static final String DB_PASS = System.getenv().getOrDefault(
-            "DB_PASS", "rootpassword");
+            "DB_PASSWORD", System.getenv().getOrDefault("DB_PASS", "rootpassword"));
 
     private static final int POOL_SIZE = 10;
     private static final BlockingQueue<Connection> pool = new ArrayBlockingQueue<>(POOL_SIZE);
