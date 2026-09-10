@@ -33,6 +33,10 @@
   --gray-950: #030712;
 
   /* ── Status Colors ── */
+  --status-new:         #3B82F6;
+  --status-new-bg:      #EFF6FF;
+  --status-assigned:    #0EA5E9;
+  --status-assigned-bg: #F0F9FF;
   --status-open:        #3B82F6;
   --status-open-bg:     #EFF6FF;
   --status-progress:    #F59E0B;
@@ -51,6 +55,8 @@
   --priority-high-bg:   #FFF7ED;
   --priority-medium:    #EAB308;
   --priority-medium-bg: #FEFCE8;
+  --priority-normal:    #64748B;
+  --priority-normal-bg: #F1F5F9;
   --priority-low:       #22C55E;
   --priority-low-bg:    #F0FDF4;
 
@@ -227,6 +233,8 @@
   --color-info:          #60A5FA;
   --color-info-bg:       rgba(59, 130, 246, 0.12);
 
+  --status-new-bg:      rgba(59, 130, 246, 0.12);
+  --status-assigned-bg: rgba(14, 165, 233, 0.12);
   --status-open-bg:     rgba(59, 130, 246, 0.12);
   --status-progress-bg: rgba(245, 158, 11, 0.12);
   --status-pending-bg:  rgba(239, 68, 68, 0.12);
@@ -236,6 +244,7 @@
   --priority-urgent-bg: rgba(220, 38, 38, 0.12);
   --priority-high-bg:   rgba(249, 115, 22, 0.12);
   --priority-medium-bg: rgba(234, 179, 8, 0.12);
+  --priority-normal-bg: rgba(100, 116, 139, 0.12);
   --priority-low-bg:    rgba(34, 197, 94, 0.12);
 
   --shadow-xs:  0 1px 2px rgba(0, 0, 0, 0.2);

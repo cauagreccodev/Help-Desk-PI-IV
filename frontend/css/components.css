@@ -560,6 +560,12 @@
 }
 
 /* Status badges */
+.badge-new         { background: var(--status-new-bg);       color: var(--status-new); }
+.badge-new .badge-dot { background: var(--status-new); }
+
+.badge-assigned    { background: var(--status-assigned-bg);  color: var(--status-assigned); }
+.badge-assigned .badge-dot { background: var(--status-assigned); }
+
 .badge-open        { background: var(--status-open-bg);     color: var(--status-open); }
 .badge-open .badge-dot { background: var(--status-open); }
 
@@ -579,6 +585,7 @@
 .badge-urgent  { background: var(--priority-urgent-bg); color: var(--priority-urgent); }
 .badge-high    { background: var(--priority-high-bg);   color: var(--priority-high); }
 .badge-medium  { background: var(--priority-medium-bg); color: var(--priority-medium); }
+.badge-normal  { background: var(--priority-normal-bg); color: var(--priority-normal); }
 .badge-low     { background: var(--priority-low-bg);    color: var(--priority-low); }
 
 /* ============================================

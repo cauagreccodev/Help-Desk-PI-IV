@@ -102,8 +102,8 @@ const App = (() => {
     }
 
     // Ordenação
-    const prioridadeOrder = { urgente: 0, alta: 1, media: 2, baixa: 3 };
-    const statusOrder = { aberto: 0, em_andamento: 1, pendente: 2, resolvido: 3, fechado: 4 };
+    const prioridadeOrder = { urgente: 0, alta: 1, media: 2, normal: 3, baixa: 4 };
+    const statusOrder = { novo: 0, atribuido: 1, em_andamento: 2, pendente: 3, resolvido: 4, fechado: 5 };
 
     data.sort((a, b) => {
       let valA, valB;
@@ -173,9 +173,12 @@ const App = (() => {
     const titulo = document.getElementById('chamadoTitulo').value.trim();
     const descricao = document.getElementById('chamadoDescricao').value.trim();
     const categoria = document.getElementById('chamadoCategoria').value;
-    const prioridade = document.getElementById('chamadoPrioridade').value;
-    const status = document.getElementById('chamadoStatus').value;
-    const tecnicoId = document.getElementById('chamadoTecnico').value;
+    const prioridade = document.getElementById('chamadoPrioridade').value || 'normal';
+
+    // Campos condicionais (só existem para TI na edição)
+    const statusEl = document.getElementById('chamadoStatus');
+    const tecnicoEl = document.getElementById('chamadoTecnico');
+    const solicitanteEl = document.getElementById('chamadoSolicitante');
 
     // Validação
     let valid = true;
@@ -201,13 +204,6 @@ const App = (() => {
       clearFieldError('chamadoCategoria', 'errorCategoria');
     }
 
-    if (!prioridade) {
-      showFieldError('chamadoPrioridade', 'errorPrioridade', 'Selecione uma prioridade.');
-      valid = false;
-    } else {
-      clearFieldError('chamadoPrioridade', 'errorPrioridade');
-    }
-
     if (!valid) return;
 
     const now = new Date().toISOString();
@@ -219,16 +215,44 @@ const App = (() => {
 
       const changes = [];
       if (chamado.titulo !== titulo) changes.push('título');
-      if (chamado.status !== status) changes.push('status');
       if (chamado.prioridade !== prioridade) changes.push('prioridade');
 
       chamado.titulo = titulo;
       chamado.descricao = descricao;
       chamado.categoria = parseInt(categoria);
       chamado.prioridade = prioridade;
-      chamado.status = status;
-      chamado.tecnicoId = tecnicoId ? parseInt(tecnicoId) : null;
       chamado.atualizadoEm = now;
+
+      // Status e Técnico — só se os campos existirem (TI)
+      if (statusEl) {
+        const newStatus = statusEl.value;
+        if (chamado.status !== newStatus) changes.push('status');
+        chamado.status = newStatus;
+      }
+
+      if (tecnicoEl) {
+        const newTecnicoId = tecnicoEl.value ? parseInt(tecnicoEl.value) : null;
+        const oldTecnicoId = chamado.tecnicoId;
+        chamado.tecnicoId = newTecnicoId;
+
+        // Auto-mudar status para 'atribuido' ao atribuir técnico (se estava 'novo')
+        if (newTecnicoId && !oldTecnicoId && chamado.status === 'novo') {
+          chamado.status = 'atribuido';
+          changes.push('status → Atribuído');
+          const tecnico = getUserById(newTecnicoId);
+          chamado.timeline.push({
+            tipo: 'atribuicao',
+            autorId: CURRENT_USER.id,
+            data: now,
+            mensagem: `Chamado atribuído ao técnico ${tecnico ? tecnico.nome : 'desconhecido'} por ${CURRENT_USER.nome}.`
+          });
+        }
+      }
+
+      // Solicitante — só se o campo existir (TI pode alterar)
+      if (solicitanteEl && solicitanteEl.value) {
+        chamado.solicitanteId = parseInt(solicitanteEl.value);
+      }
 
       if (changes.length > 0) {
         chamado.timeline.push({
@@ -243,14 +267,7 @@ const App = (() => {
       showToast('success', 'Chamado atualizado', `Chamado #${String(chamado.id).padStart(4, '0')} foi atualizado com sucesso.`);
     } else {
       // ── CREATE ──
-      const solicitanteEl = document.getElementById('chamadoSolicitante');
-      const solicitanteId = solicitanteEl ? solicitanteEl.value : '';
-
-      if (!solicitanteId && solicitanteEl) {
-        showFieldError('chamadoSolicitante', 'errorSolicitante', 'Selecione um solicitante.');
-        return;
-      }
-
+      // Status sempre 'novo', solicitante sempre o usuário logado, sem técnico
       const slaDate = new Date();
       slaDate.setDate(slaDate.getDate() + (prioridade === 'urgente' ? 1 : prioridade === 'alta' ? 2 : 3));
 
@@ -258,33 +275,23 @@ const App = (() => {
         id: getNextId(),
         titulo,
         descricao,
-        status,
+        status: 'novo',
         prioridade,
         categoria: parseInt(categoria),
-        solicitanteId: parseInt(solicitanteId),
-        tecnicoId: tecnicoId ? parseInt(tecnicoId) : null,
+        solicitanteId: CURRENT_USER.id,
+        tecnicoId: null,
         criadoEm: now,
         atualizadoEm: now,
         sla: slaDate.toISOString(),
         timeline: [
           {
             tipo: 'criacao',
-            autorId: parseInt(solicitanteId),
+            autorId: CURRENT_USER.id,
             data: now,
-            mensagem: 'Chamado aberto pelo solicitante.'
+            mensagem: `Chamado aberto por ${CURRENT_USER.nome}.`
           }
         ]
       };
-
-      if (tecnicoId) {
-        const tecnico = getUserById(parseInt(tecnicoId));
-        novoChamado.timeline.push({
-          tipo: 'atribuicao',
-          autorId: CURRENT_USER.id,
-          data: now,
-          mensagem: `Chamado atribuído ao técnico ${tecnico ? tecnico.nome : 'desconhecido'}.`
-        });
-      }
 
       chamados.push(novoChamado);
       closeModal();
@@ -353,8 +360,30 @@ const App = (() => {
       mensagem: `Chamado atribuído ao técnico ${tecnico ? tecnico.nome : 'desconhecido'} por ${CURRENT_USER.nome}.`
     });
 
+    // Auto-mudar status para 'atribuido' se estava 'novo'
+    if (chamado.status === 'novo') {
+      chamado.status = 'atribuido';
+      chamado.timeline.push({
+        tipo: 'status',
+        autorId: CURRENT_USER.id,
+        data: new Date().toISOString(),
+        mensagem: `Status alterado automaticamente para "Atribuído".`
+      });
+    }
+
     showToast('success', 'Técnico atribuído', `${tecnico ? tecnico.nome : 'Técnico'} foi atribuído ao chamado #${String(chamadoId).padStart(4, '0')}.`);
     refreshCurrentView();
+  }
+
+  // ── Auto-atribuição: Técnico se atribui ao chamado ──
+  function selfAssignChamado(chamadoId) {
+    if (!CURRENT_USER) return;
+    const isTI = CURRENT_USER.perfil === 'admin' || CURRENT_USER.perfil === 'tecnico';
+    if (!isTI) {
+      showToast('error', 'Sem permissão', 'Apenas técnicos e administradores podem se atribuir a chamados.');
+      return;
+    }
+    quickTecnicoChange(chamadoId, CURRENT_USER.id);
   }
 
   // ── Theme ──
@@ -624,7 +653,8 @@ const App = (() => {
     closeModal,
     changeTheme,
     quickStatusChange,
-    quickTecnicoChange
+    quickTecnicoChange,
+    selfAssignChamado
   };
 })();
 

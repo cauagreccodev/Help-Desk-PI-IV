@@ -8,20 +8,31 @@
 const USERS = [];
 
 // ── Categorias ──
-const CATEGORIAS = [];
+const CATEGORIAS = [
+  { id: 1, nome: 'Hardware' },
+  { id: 2, nome: 'Software' },
+  { id: 3, nome: 'Rede / Internet' },
+  { id: 4, nome: 'E-mail' },
+  { id: 5, nome: 'Acesso / Permissões' },
+  { id: 6, nome: 'Impressora' },
+  { id: 7, nome: 'Telefonia' },
+  { id: 8, nome: 'Outros' }
+];
 
 // ── Status possíveis ──
 const STATUS_LIST = [
-  { id: 'aberto',       nome: 'Aberto',        classe: 'badge-open' },
-  { id: 'em_andamento', nome: 'Em Andamento',   classe: 'badge-progress' },
-  { id: 'pendente',     nome: 'Pendente',       classe: 'badge-pending' },
-  { id: 'resolvido',    nome: 'Resolvido',      classe: 'badge-resolved' },
-  { id: 'fechado',      nome: 'Fechado',        classe: 'badge-closed' }
+  { id: 'novo',         nome: 'Novo',          classe: 'badge-new' },
+  { id: 'atribuido',    nome: 'Atribuído',     classe: 'badge-assigned' },
+  { id: 'em_andamento', nome: 'Em Andamento',  classe: 'badge-progress' },
+  { id: 'pendente',     nome: 'Pendente',      classe: 'badge-pending' },
+  { id: 'resolvido',    nome: 'Resolvido',     classe: 'badge-resolved' },
+  { id: 'fechado',      nome: 'Fechado',       classe: 'badge-closed' }
 ];
 
 // ── Prioridades ──
 const PRIORIDADES = [
   { id: 'baixa',   nome: 'Baixa',   classe: 'badge-low' },
+  { id: 'normal',  nome: 'Normal',  classe: 'badge-normal' },
   { id: 'media',   nome: 'Média',   classe: 'badge-medium' },
   { id: 'alta',    nome: 'Alta',    classe: 'badge-high' },
   { id: 'urgente', nome: 'Urgente', classe: 'badge-urgent' }
@@ -79,13 +90,15 @@ function getPrioridadeById(id) {
 // ── Estatísticas do Dashboard ──
 function getDashboardStats() {
   const total = chamados.length;
-  const abertos = chamados.filter(c => c.status === 'aberto').length;
+  const novos = chamados.filter(c => c.status === 'novo').length;
+  const atribuidos = chamados.filter(c => c.status === 'atribuido').length;
   const emAndamento = chamados.filter(c => c.status === 'em_andamento').length;
   const resolvidos = chamados.filter(c => c.status === 'resolvido').length;
   const pendentes = chamados.filter(c => c.status === 'pendente').length;
   const fechados = chamados.filter(c => c.status === 'fechado').length;
+  const abertos = novos + atribuidos; // retrocompatibilidade
 
-  return { total, abertos, emAndamento, resolvidos, pendentes, fechados };
+  return { total, novos, atribuidos, abertos, emAndamento, resolvidos, pendentes, fechados };
 }
 
 // ── Formatação de Data ──

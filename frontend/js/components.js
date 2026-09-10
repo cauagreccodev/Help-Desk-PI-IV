@@ -626,12 +626,18 @@ function renderChamadoDetail(id) {
             </div>
           </div>
 
-          <!-- Quick Actions -->
+          <!-- Quick Actions (apenas TI) -->
+          ${CURRENT_USER && (CURRENT_USER.perfil === 'admin' || CURRENT_USER.perfil === 'tecnico') ? `
           <div class="detail-card">
             <div class="detail-card__header">
               <h3 class="detail-card__title">Ações Rápidas</h3>
             </div>
             <div class="detail-card__body" style="display:flex; flex-direction:column; gap:var(--space-2);">
+              ${!chamado.tecnicoId ? `
+                <button class="btn btn-primary" onclick="App.selfAssignChamado(${chamado.id})" style="width:100%;">
+                  ${Icons.user} Me Atribuir
+                </button>
+              ` : ''}
               <select class="form-select" id="quickStatusChange" onchange="App.quickStatusChange(${chamado.id}, this.value)">
                 <option value="" disabled selected>Alterar Status...</option>
                 ${STATUS_LIST.map(s => `<option value="${s.id}" ${s.id === chamado.status ? 'disabled' : ''}>${s.nome}</option>`).join('')}
@@ -642,6 +648,7 @@ function renderChamadoDetail(id) {
               </select>
             </div>
           </div>
+          ` : ''}
         </div>
       </div>
     </div>
@@ -731,6 +738,47 @@ function renderChamadoModal(chamado = null) {
   const isEdit = chamado !== null;
   const title = isEdit ? 'Editar Chamado' : 'Novo Chamado';
   const tecnicos = USERS.filter(u => u.perfil === 'tecnico' || u.perfil === 'admin');
+  const isTI = CURRENT_USER && (CURRENT_USER.perfil === 'admin' || CURRENT_USER.perfil === 'tecnico');
+
+  // Seção de Status + Técnico — só aparece na edição e apenas para TI
+  const statusTecnicoSection = isEdit && isTI ? `
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="chamadoStatus">Status</label>
+                <select class="form-select" id="chamadoStatus">
+                  ${STATUS_LIST.map(s => `<option value="${s.id}" ${chamado.status === s.id ? 'selected' : ''}>${s.nome}</option>`).join('')}
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="chamadoTecnico">Técnico Responsável</label>
+                <select class="form-select" id="chamadoTecnico">
+                  <option value="">Não atribuído</option>
+                  ${tecnicos.map(t => `<option value="${t.id}" ${chamado.tecnicoId === t.id ? 'selected' : ''}>${t.nome}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+  ` : '';
+
+  // Seção de Solicitante — só aparece na edição e apenas para TI (para poder alterar)
+  const solicitanteSection = isEdit && isTI ? `
+            <div class="form-group">
+              <label class="form-label" for="chamadoSolicitante">Solicitante</label>
+              <select class="form-select" id="chamadoSolicitante">
+                ${USERS.map(u => `<option value="${u.id}" ${chamado.solicitanteId === u.id ? 'selected' : ''}>${u.nome} (${u.departamento || 'Geral'})</option>`).join('')}
+              </select>
+            </div>
+  ` : '';
+
+  // Na criação, mostra quem está criando como info (não editável)
+  const solicitanteInfo = !isEdit && CURRENT_USER ? `
+            <div class="form-group">
+              <label class="form-label">Solicitante</label>
+              <div class="form-input form-input--readonly" style="background: var(--bg-tertiary); cursor: default; display: flex; align-items: center; gap: var(--space-2);">
+                ${Icons.user}
+                <span>${CURRENT_USER.nome} — ${CURRENT_USER.departamento || 'Geral'}</span>
+              </div>
+            </div>
+  ` : '';
 
   return `
     <div class="modal-overlay active" id="chamadoModal">
@@ -765,41 +813,16 @@ function renderChamadoModal(chamado = null) {
                 <span class="form-error" id="errorCategoria"></span>
               </div>
               <div class="form-group">
-                <label class="form-label" for="chamadoPrioridade">Prioridade <span class="required">*</span></label>
-                <select class="form-select" id="chamadoPrioridade" required>
-                  <option value="">Selecione...</option>
-                  ${PRIORIDADES.map(p => `<option value="${p.id}" ${isEdit && chamado.prioridade === p.id ? 'selected' : ''}>${p.nome}</option>`).join('')}
-                </select>
-                <span class="form-error" id="errorPrioridade"></span>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label" for="chamadoStatus">Status</label>
-                <select class="form-select" id="chamadoStatus">
-                  ${STATUS_LIST.map(s => `<option value="${s.id}" ${isEdit && chamado.status === s.id ? 'selected' : (!isEdit && s.id === 'aberto' ? 'selected' : '')}>${s.nome}</option>`).join('')}
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="chamadoTecnico">Técnico Responsável</label>
-                <select class="form-select" id="chamadoTecnico">
-                  <option value="">Não atribuído</option>
-                  ${tecnicos.map(t => `<option value="${t.id}" ${isEdit && chamado.tecnicoId === t.id ? 'selected' : ''}>${t.nome}</option>`).join('')}
+                <label class="form-label" for="chamadoPrioridade">Prioridade</label>
+                <select class="form-select" id="chamadoPrioridade">
+                  ${PRIORIDADES.map(p => `<option value="${p.id}" ${isEdit && chamado.prioridade === p.id ? 'selected' : (!isEdit && p.id === 'normal' ? 'selected' : '')}>${p.nome}</option>`).join('')}
                 </select>
               </div>
             </div>
 
-            ${!isEdit ? `
-              <div class="form-group">
-                <label class="form-label" for="chamadoSolicitante">Solicitante <span class="required">*</span></label>
-                <select class="form-select" id="chamadoSolicitante" required>
-                  <option value="">Selecione...</option>
-                  ${USERS.map(u => `<option value="${u.id}">${u.nome} (${u.departamento})</option>`).join('')}
-                </select>
-                <span class="form-error" id="errorSolicitante"></span>
-              </div>
-            ` : ''}
+            ${statusTecnicoSection}
+            ${solicitanteSection}
+            ${solicitanteInfo}
           </form>
         </div>
         <div class="modal__footer">
