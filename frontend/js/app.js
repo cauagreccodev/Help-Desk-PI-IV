@@ -1,9 +1,7 @@
 /* ============================================
-   HELP DESK PI IV — App Principal
-   CRUD de Chamados + Inicialização
-   
-   TODO (Futuro): Substituir operações em memória
-   por chamadas ao backend Java via WebSocket.
+   HELP DESK PI IV — Main Application
+   Ticket CRUD via API + Initialization
+   All operations persist to Neon DB
    ============================================ */
 
 const App = (() => {
@@ -11,19 +9,24 @@ const App = (() => {
   let currentFilters = {
     search: '',
     status: '',
-    prioridade: '',
-    categoria: ''
+    priority: '',
+    category: ''
   };
-  let sortField = 'criadoEm';
+  let sortField = 'createdAt';
   let sortDir = 'desc';
 
-  // ── Inicialização ──
-  function init() {
-    // Inicializa tema
+  // ── Initialization ──
+  async function init() {
+    // Init theme
     ThemeManager.init();
 
-    // Monta layout base
+    // Show loading state
     const appEl = document.getElementById('app');
+
+    // Load data from API FIRST (so sidebar/dashboard show real data)
+    await loadAppData();
+
+    // Build base layout (sidebar now has real ticket count)
     appEl.innerHTML = `
       ${renderSidebar()}
       <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -35,34 +38,46 @@ const App = (() => {
       <div id="modalContainer"></div>
     `;
 
-    // Registra rotas
+    // Register routes
     Router.register('dashboard', () => {
-      renderPage('Dashboard', ['Início', 'Dashboard'], renderDashboard());
+      renderPage(i18n.t('dashboard'), [i18n.t('home'), i18n.t('dashboard')], renderDashboard());
     });
 
     Router.register('chamados', () => {
-      renderPage('Chamados', ['Início', 'Chamados'], renderChamadosList(getFilteredChamados()));
-      bindChamadosEvents();
+      renderPage(i18n.t('tickets'), [i18n.t('home'), i18n.t('tickets')], renderTicketsList(getFilteredTickets()));
+      bindTicketsEvents();
     });
 
-    Router.register('chamado/:id', (params) => {
-      const chamado = chamados.find(c => c.id === parseInt(params.id));
-      const title = chamado ? `Chamado #${String(chamado.id).padStart(4, '0')}` : 'Chamado';
-      renderPage(title, ['Início', 'Chamados', title], renderChamadoDetail(params.id));
+    Router.register('chamado/:id', async (params) => {
+      // Show loading state
+      renderPage(i18n.t('tickets'), [i18n.t('home'), i18n.t('tickets'), '...'], `
+        <div style="display:flex;align-items:center;justify-content:center;padding:var(--space-16);">
+          <div class="animate-spin" style="color:var(--color-primary);">${Icons.loader}</div>
+        </div>
+      `);
+
+      try {
+        const ticketData = await Api.fetchTicketById(parseInt(params.id));
+        const title = ticketData ? `${i18n.t('tickets')} #${String(ticketData.id).padStart(4, '0')}` : i18n.t('tickets');
+        renderPage(title, [i18n.t('home'), i18n.t('tickets'), title], renderTicketDetail(ticketData));
+      } catch (error) {
+        console.error('Error loading ticket:', error);
+        renderPage(i18n.t('tickets'), [i18n.t('home'), i18n.t('tickets')], renderTicketDetail(null));
+      }
     });
 
     Router.register('configuracoes', () => {
-      renderPage('Configurações', ['Início', 'Configurações'], renderConfiguracoes());
+      renderPage(i18n.t('settings'), [i18n.t('home'), i18n.t('settings')], renderSettings());
     });
 
     // Bind sidebar & header events
     bindGlobalEvents();
 
-    // Inicia router
+    // Start router
     Router.init();
   }
 
-  // ── Renderização de Página ──
+  // ── Page Rendering ──
   function renderPage(title, breadcrumbs, content) {
     document.title = `${title} — HelpDesk`;
     document.getElementById('headerContainer').innerHTML = renderHeader(breadcrumbs);
@@ -72,38 +87,38 @@ const App = (() => {
     bindHeaderEvents();
   }
 
-  // ── Filtros e Busca ──
-  function getFilteredChamados() {
-    let data = [...chamados];
+  // ── Filters & Search ──
+  function getFilteredTickets() {
+    let data = [...tickets];
 
-    // Filtro de busca
+    // Search filter
     if (currentFilters.search) {
       const q = currentFilters.search.toLowerCase();
-      data = data.filter(c =>
-        c.titulo.toLowerCase().includes(q) ||
-        String(c.id).includes(q) ||
-        c.descricao.toLowerCase().includes(q)
+      data = data.filter(t =>
+        t.title.toLowerCase().includes(q) ||
+        String(t.id).includes(q) ||
+        t.description.toLowerCase().includes(q)
       );
     }
 
-    // Filtro de status
+    // Status filter
     if (currentFilters.status) {
-      data = data.filter(c => c.status === currentFilters.status);
+      data = data.filter(t => t.status === currentFilters.status);
     }
 
-    // Filtro de prioridade
-    if (currentFilters.prioridade) {
-      data = data.filter(c => c.prioridade === currentFilters.prioridade);
+    // Priority filter
+    if (currentFilters.priority) {
+      data = data.filter(t => t.priority === currentFilters.priority);
     }
 
-    // Filtro de categoria
-    if (currentFilters.categoria) {
-      data = data.filter(c => c.categoria === parseInt(currentFilters.categoria));
+    // Category filter
+    if (currentFilters.category) {
+      data = data.filter(t => t.categoryId === parseInt(currentFilters.category));
     }
 
-    // Ordenação
-    const prioridadeOrder = { urgente: 0, alta: 1, media: 2, normal: 3, baixa: 4 };
-    const statusOrder = { novo: 0, atribuido: 1, em_andamento: 2, pendente: 3, resolvido: 4, fechado: 5 };
+    // Sorting (strictly Neon DB fields)
+    const priorityOrder = { URGENT: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
+    const statusOrder = { NEW: 0, ASSIGNED: 1, CLOSED: 2, UNRESOLVED: 3 };
 
     data.sort((a, b) => {
       let valA, valB;
@@ -113,22 +128,22 @@ const App = (() => {
           valA = a.id;
           valB = b.id;
           break;
-        case 'titulo':
-          valA = a.titulo.toLowerCase();
-          valB = b.titulo.toLowerCase();
+        case 'title':
+          valA = a.title.toLowerCase();
+          valB = b.title.toLowerCase();
           break;
         case 'status':
           valA = statusOrder[a.status] ?? 99;
           valB = statusOrder[b.status] ?? 99;
           break;
-        case 'prioridade':
-          valA = prioridadeOrder[a.prioridade] ?? 99;
-          valB = prioridadeOrder[b.prioridade] ?? 99;
+        case 'priority':
+          valA = priorityOrder[a.priority] ?? 99;
+          valB = priorityOrder[b.priority] ?? 99;
           break;
-        case 'criadoEm':
+        case 'createdAt':
         default:
-          valA = new Date(a.criadoEm).getTime();
-          valB = new Date(b.criadoEm).getTime();
+          valA = new Date(a.createdAt).getTime();
+          valB = new Date(b.createdAt).getTime();
           break;
       }
 
@@ -141,249 +156,200 @@ const App = (() => {
   }
 
   function applyFilters() {
-    const content = renderChamadosList(getFilteredChamados());
+    const content = renderTicketsList(getFilteredTickets());
     document.getElementById('pageContent').innerHTML = content;
-    bindChamadosEvents();
+    bindTicketsEvents();
   }
 
   // ── CRUD: Create ──
-  function openNewChamado() {
+  function openNewTicket() {
     const container = document.getElementById('modalContainer');
-    container.innerHTML = renderChamadoModal(null);
+    container.innerHTML = renderTicketModal(null);
     document.body.style.overflow = 'hidden';
   }
 
   // ── CRUD: Read (View) ──
-  function viewChamado(id) {
+  function viewTicket(id) {
     Router.navigate(`#chamado/${id}`);
   }
 
   // ── CRUD: Update (Edit) ──
-  function editChamado(id) {
-    const chamado = chamados.find(c => c.id === id);
-    if (!chamado) return;
-    const container = document.getElementById('modalContainer');
-    container.innerHTML = renderChamadoModal(chamado);
-    document.body.style.overflow = 'hidden';
+  async function editTicket(id) {
+    try {
+      const ticket = await Api.fetchTicketById(id);
+      if (!ticket) return;
+      const container = document.getElementById('modalContainer');
+      container.innerHTML = renderTicketModal(ticket);
+      document.body.style.overflow = 'hidden';
+    } catch (error) {
+      console.error('Error loading ticket for edit:', error);
+      showToast('error', i18n.t('error'), i18n.t('loadError'));
+    }
   }
 
   // ── CRUD: Save (Create or Update) ──
-  function saveChamado() {
-    const id = document.getElementById('chamadoId').value;
-    const titulo = document.getElementById('chamadoTitulo').value.trim();
-    const descricao = document.getElementById('chamadoDescricao').value.trim();
-    const categoria = document.getElementById('chamadoCategoria').value;
-    const prioridade = document.getElementById('chamadoPrioridade').value || 'normal';
+  async function saveTicket() {
+    const id = document.getElementById('ticketId').value;
+    const title = document.getElementById('ticketTitle').value.trim();
+    const description = document.getElementById('ticketDescription').value.trim();
+    const categoryId = document.getElementById('ticketCategory').value;
+    const priority = document.getElementById('ticketPriority').value || 'MEDIUM';
 
-    // Campos condicionais (só existem para TI na edição)
-    const statusEl = document.getElementById('chamadoStatus');
-    const tecnicoEl = document.getElementById('chamadoTecnico');
-    const solicitanteEl = document.getElementById('chamadoSolicitante');
+    // Conditional fields (only exist for TI users in edit mode)
+    const statusEl = document.getElementById('ticketStatus');
+    const technicianEl = document.getElementById('ticketTechnician');
 
-    // Validação
+    // Validation
     let valid = true;
 
-    if (!titulo) {
-      showFieldError('chamadoTitulo', 'errorTitulo', 'O título é obrigatório.');
+    if (!title) {
+      showFieldError('ticketTitle', 'errorTitle', i18n.t('titleRequired'));
       valid = false;
     } else {
-      clearFieldError('chamadoTitulo', 'errorTitulo');
+      clearFieldError('ticketTitle', 'errorTitle');
     }
 
-    if (!descricao) {
-      showFieldError('chamadoDescricao', 'errorDescricao', 'A descrição é obrigatória.');
+    if (!description) {
+      showFieldError('ticketDescription', 'errorDescription', i18n.t('descriptionRequired'));
       valid = false;
     } else {
-      clearFieldError('chamadoDescricao', 'errorDescricao');
+      clearFieldError('ticketDescription', 'errorDescription');
     }
 
-    if (!categoria) {
-      showFieldError('chamadoCategoria', 'errorCategoria', 'Selecione uma categoria.');
+    if (!categoryId) {
+      showFieldError('ticketCategory', 'errorCategory', i18n.t('categoryRequired'));
       valid = false;
     } else {
-      clearFieldError('chamadoCategoria', 'errorCategoria');
+      clearFieldError('ticketCategory', 'errorCategory');
     }
 
     if (!valid) return;
 
-    const now = new Date().toISOString();
+    try {
+      if (id) {
+        // ── UPDATE ──
+        const newStatus = statusEl ? statusEl.value : null;
+        const newSupportId = technicianEl && technicianEl.value ? parseInt(technicianEl.value) : null;
 
-    if (id) {
-      // ── UPDATE ──
-      const chamado = chamados.find(c => c.id === parseInt(id));
-      if (!chamado) return;
+        const changes = [];
+        if (newStatus) changes.push(i18n.status(newStatus));
 
-      const changes = [];
-      if (chamado.titulo !== titulo) changes.push('título');
-      if (chamado.prioridade !== prioridade) changes.push('prioridade');
+        const updatePayload = {
+          status: newStatus || 'NEW',
+          supportId: newSupportId,
+          message: `Chamado atualizado por ${CURRENT_USER.name}. Alterações: ${changes.length > 0 ? changes.join(', ') : 'dados gerais'}.`
+        };
 
-      chamado.titulo = titulo;
-      chamado.descricao = descricao;
-      chamado.categoria = parseInt(categoria);
-      chamado.prioridade = prioridade;
-      chamado.atualizadoEm = now;
+        await Api.updateTicket(parseInt(id), updatePayload);
+        await reloadTickets();
 
-      // Status e Técnico — só se os campos existirem (TI)
-      if (statusEl) {
-        const newStatus = statusEl.value;
-        if (chamado.status !== newStatus) changes.push('status');
-        chamado.status = newStatus;
-      }
-
-      if (tecnicoEl) {
-        const newTecnicoId = tecnicoEl.value ? parseInt(tecnicoEl.value) : null;
-        const oldTecnicoId = chamado.tecnicoId;
-        chamado.tecnicoId = newTecnicoId;
-
-        // Auto-mudar status para 'atribuido' ao atribuir técnico (se estava 'novo')
-        if (newTecnicoId && !oldTecnicoId && chamado.status === 'novo') {
-          chamado.status = 'atribuido';
-          changes.push('status → Atribuído');
-          const tecnico = getUserById(newTecnicoId);
-          chamado.timeline.push({
-            tipo: 'atribuicao',
-            autorId: CURRENT_USER.id,
-            data: now,
-            mensagem: `Chamado atribuído ao técnico ${tecnico ? tecnico.nome : 'desconhecido'} por ${CURRENT_USER.nome}.`
-          });
-        }
-      }
-
-      // Solicitante — só se o campo existir (TI pode alterar)
-      if (solicitanteEl && solicitanteEl.value) {
-        chamado.solicitanteId = parseInt(solicitanteEl.value);
-      }
-
-      if (changes.length > 0) {
-        chamado.timeline.push({
-          tipo: 'status',
-          autorId: CURRENT_USER.id,
-          data: now,
-          mensagem: `Chamado atualizado: ${changes.join(', ')} alterado(s) por ${CURRENT_USER.nome}.`
+        closeModal();
+        showToast('success', i18n.t('ticketUpdated'), `${i18n.t('tickets')} #${String(id).padStart(4, '0')} foi atualizado com sucesso.`);
+      } else {
+        // ── CREATE ──
+        const newTicket = await Api.createTicket({
+          title,
+          description,
+          priority,
+          categoryId: parseInt(categoryId)
         });
+
+        await reloadTickets();
+
+        closeModal();
+        showToast('success', i18n.t('ticketCreated'), `${i18n.t('tickets')} #${String(newTicket.id).padStart(4, '0')} foi criado com sucesso.`);
       }
 
-      closeModal();
-      showToast('success', 'Chamado atualizado', `Chamado #${String(chamado.id).padStart(4, '0')} foi atualizado com sucesso.`);
-    } else {
-      // ── CREATE ──
-      // Status sempre 'novo', solicitante sempre o usuário logado, sem técnico
-      const slaDate = new Date();
-      slaDate.setDate(slaDate.getDate() + (prioridade === 'urgente' ? 1 : prioridade === 'alta' ? 2 : 3));
-
-      const novoChamado = {
-        id: getNextId(),
-        titulo,
-        descricao,
-        status: 'novo',
-        prioridade,
-        categoria: parseInt(categoria),
-        solicitanteId: CURRENT_USER.id,
-        tecnicoId: null,
-        criadoEm: now,
-        atualizadoEm: now,
-        sla: slaDate.toISOString(),
-        timeline: [
-          {
-            tipo: 'criacao',
-            autorId: CURRENT_USER.id,
-            data: now,
-            mensagem: `Chamado aberto por ${CURRENT_USER.nome}.`
-          }
-        ]
-      };
-
-      chamados.push(novoChamado);
-      closeModal();
-      showToast('success', 'Chamado criado', `Chamado #${String(novoChamado.id).padStart(4, '0')} foi criado com sucesso.`);
+      // Refresh view
+      refreshCurrentView();
+    } catch (error) {
+      console.error('Error saving ticket:', error);
+      showToast('error', i18n.t('error'), i18n.t('saveError'));
     }
-
-    // Refresh view
-    refreshCurrentView();
   }
 
   // ── CRUD: Delete ──
-  function confirmDeleteChamado(id) {
-    const chamado = chamados.find(c => c.id === id);
-    if (!chamado) return;
+  function confirmDeleteTicket(id) {
+    const ticket = tickets.find(t => t.id === id);
+    if (!ticket) return;
     const container = document.getElementById('modalContainer');
-    container.innerHTML = renderDeleteModal(chamado);
+    container.innerHTML = renderDeleteModal(ticket);
     document.body.style.overflow = 'hidden';
   }
 
-  function deleteChamado(id) {
-    const chamado = chamados.find(c => c.id === id);
-    if (!chamado) return;
+  async function deleteTicket(id) {
+    try {
+      await Api.deleteTicket(id);
+      await reloadTickets();
 
-    chamados = chamados.filter(c => c.id !== id);
-    closeModal();
-    showToast('success', 'Chamado excluído', `Chamado #${String(id).padStart(4, '0')} foi excluído com sucesso.`);
+      closeModal();
+      showToast('success', i18n.t('ticketDeleted'), `${i18n.t('tickets')} #${String(id).padStart(4, '0')} foi excluído com sucesso.`);
 
-    // Se estava na página de detalhe, volta para lista
-    if (Router.getCurrentRoute() && Router.getCurrentRoute().startsWith('chamado/')) {
-      Router.navigate('#chamados');
-    } else {
-      refreshCurrentView();
+      // If on detail page, go back to list
+      if (Router.getCurrentRoute() && Router.getCurrentRoute().startsWith('chamado/')) {
+        Router.navigate('#chamados');
+      } else {
+        refreshCurrentView();
+      }
+    } catch (error) {
+      console.error('Error deleting ticket:', error);
+      showToast('error', i18n.t('error'), i18n.t('deleteError'));
     }
   }
 
   // ── Quick Actions ──
-  function quickStatusChange(chamadoId, newStatus) {
-    const chamado = chamados.find(c => c.id === chamadoId);
-    if (!chamado || !newStatus) return;
+  async function quickStatusChange(ticketId, newStatus) {
+    if (!newStatus) return;
 
-    const statusObj = getStatusById(newStatus);
-    chamado.status = newStatus;
-    chamado.atualizadoEm = new Date().toISOString();
-    chamado.timeline.push({
-      tipo: 'status',
-      autorId: CURRENT_USER.id,
-      data: new Date().toISOString(),
-      mensagem: `Status alterado para "${statusObj.nome}" por ${CURRENT_USER.nome}.`
-    });
-
-    showToast('success', 'Status alterado', `Chamado #${String(chamadoId).padStart(4, '0')} agora está "${statusObj.nome}".`);
-    refreshCurrentView();
-  }
-
-  function quickTecnicoChange(chamadoId, tecnicoId) {
-    const chamado = chamados.find(c => c.id === chamadoId);
-    if (!chamado || !tecnicoId) return;
-
-    const tecnico = getUserById(parseInt(tecnicoId));
-    chamado.tecnicoId = parseInt(tecnicoId);
-    chamado.atualizadoEm = new Date().toISOString();
-    chamado.timeline.push({
-      tipo: 'atribuicao',
-      autorId: CURRENT_USER.id,
-      data: new Date().toISOString(),
-      mensagem: `Chamado atribuído ao técnico ${tecnico ? tecnico.nome : 'desconhecido'} por ${CURRENT_USER.nome}.`
-    });
-
-    // Auto-mudar status para 'atribuido' se estava 'novo'
-    if (chamado.status === 'novo') {
-      chamado.status = 'atribuido';
-      chamado.timeline.push({
-        tipo: 'status',
-        autorId: CURRENT_USER.id,
-        data: new Date().toISOString(),
-        mensagem: `Status alterado automaticamente para "Atribuído".`
+    try {
+      await Api.updateTicket(ticketId, {
+        status: newStatus,
+        message: `Status alterado para "${i18n.status(newStatus)}" por ${CURRENT_USER.name}.`
       });
-    }
 
-    showToast('success', 'Técnico atribuído', `${tecnico ? tecnico.nome : 'Técnico'} foi atribuído ao chamado #${String(chamadoId).padStart(4, '0')}.`);
-    refreshCurrentView();
+      await reloadTickets();
+      showToast('success', i18n.t('statusChanged'), `${i18n.t('tickets')} #${String(ticketId).padStart(4, '0')} agora está "${i18n.status(newStatus)}".`);
+      refreshCurrentView();
+    } catch (error) {
+      console.error('Error updating status:', error);
+      showToast('error', i18n.t('error'), i18n.t('saveError'));
+    }
   }
 
-  // ── Auto-atribuição: Técnico se atribui ao chamado ──
-  function selfAssignChamado(chamadoId) {
+  async function quickTechnicianChange(ticketId, technicianId) {
+    if (!technicianId) return;
+
+    const technician = getUserById(parseInt(technicianId));
+    const techName = technician ? technician.name : 'Técnico';
+
+    try {
+      // Get current ticket to check status
+      const ticket = tickets.find(t => t.id === ticketId);
+      const newStatus = (ticket && ticket.status === 'NEW') ? 'ASSIGNED' : (ticket ? ticket.status : 'ASSIGNED');
+
+      await Api.updateTicket(ticketId, {
+        status: newStatus,
+        supportId: parseInt(technicianId),
+        message: `Chamado atribuído ao técnico ${techName} por ${CURRENT_USER.name}.`
+      });
+
+      await reloadTickets();
+      showToast('success', i18n.t('techAssigned'), `${techName} foi atribuído ao chamado #${String(ticketId).padStart(4, '0')}.`);
+      refreshCurrentView();
+    } catch (error) {
+      console.error('Error assigning technician:', error);
+      showToast('error', i18n.t('error'), i18n.t('saveError'));
+    }
+  }
+
+  // ── Self-assign: Technician assigns themselves ──
+  function selfAssignTicket(ticketId) {
     if (!CURRENT_USER) return;
-    const isTI = CURRENT_USER.perfil === 'admin' || CURRENT_USER.perfil === 'tecnico';
-    if (!isTI) {
-      showToast('error', 'Sem permissão', 'Apenas técnicos e administradores podem se atribuir a chamados.');
+    if (!isTIUser(CURRENT_USER)) {
+      showToast('error', i18n.t('noPermission'), i18n.t('noPermissionMsg'));
       return;
     }
-    quickTecnicoChange(chamadoId, CURRENT_USER.id);
+    quickTechnicianChange(ticketId, CURRENT_USER.id);
   }
 
   // ── Theme ──
@@ -394,7 +360,7 @@ const App = (() => {
     if (btn) {
       btn.innerHTML = ThemeManager.isDark() ? Icons.sun : Icons.moon;
     }
-    showToast('info', 'Tema alterado', `Tema ${theme === 'dark' ? 'escuro' : 'claro'} aplicado com sucesso.`);
+    showToast('info', i18n.t('themeChanged'), theme === 'dark' ? i18n.t('darkApplied') : i18n.t('lightApplied'));
   }
 
   // ── Helpers ──
@@ -410,8 +376,54 @@ const App = (() => {
     }
   }
 
+  function updateSidebarBadges() {
+    const badge = document.getElementById('sidebarTicketCount') || document.querySelector('.sidebar__link-badge');
+    if (badge) {
+      const stats = getDashboardStats();
+      badge.textContent = stats.total;
+    }
+  }
+
+  function updateNotificationBadges() {
+    const unreadCount = getUnreadNotificationsCount();
+    const btn = document.getElementById('notificationsBtn');
+    if (btn) {
+      const dot = btn.querySelector('.notification-dot');
+      if (unreadCount > 0 && !dot) {
+        btn.insertAdjacentHTML('beforeend', '<span class="notification-dot"></span>');
+      } else if (unreadCount === 0 && dot) {
+        dot.remove();
+      }
+    }
+    const list = document.getElementById('notificationsList');
+    if (list) {
+      list.innerHTML = renderNotificationsList();
+    }
+    const markAllBtn = document.getElementById('markAllReadBtn');
+    if (markAllBtn) {
+      if (unreadCount > 0) {
+        markAllBtn.textContent = `${unreadCount} ${unreadCount > 1 ? i18n.t('unreads') : i18n.t('unread')} — ${i18n.t('markAll')}`;
+      } else {
+        markAllBtn.outerHTML = `<span class="dropdown__action-muted">${i18n.t('allRead')}</span>`;
+      }
+    }
+  }
+
   function refreshCurrentView() {
+    updateSidebarBadges();
+    updateNotificationBadges();
     Router.resolve();
+  }
+
+  async function refreshData() {
+    showToast('info', 'Sincronizando...', 'Buscando dados atualizados do Neon DB.');
+    const ok = await loadAppData();
+    if (ok) {
+      refreshCurrentView();
+      showToast('success', 'Sincronizado', 'Dados sincronizados com sucesso do banco de dados.');
+    } else {
+      showToast('error', 'Erro de Conexão', 'Não foi possível conectar à API do Neon.');
+    }
   }
 
   function showFieldError(inputId, errorId, message) {
@@ -521,24 +533,19 @@ const App = (() => {
     if (markAllBtn) {
       markAllBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (typeof markAllNotificationsRead === 'function') {
-          markAllNotificationsRead();
-        }
-        // Refresh the header to update notification state
+        markAllNotificationsAsRead();
         refreshCurrentView();
       });
     }
 
-    // Notification items — navigate to chamado
+    // Notification items — navigate to ticket
     document.querySelectorAll('.dropdown__notif-item[data-chamado-id]').forEach(item => {
       item.addEventListener('click', () => {
-        const chamadoId = item.getAttribute('data-chamado-id');
+        const ticketId = item.getAttribute('data-chamado-id');
         const notifId = item.getAttribute('data-notif-id');
-        if (notifId && typeof markNotificationRead === 'function') {
-          markNotificationRead(parseInt(notifId));
-        }
+        if (notifId) markNotificationAsRead(parseInt(notifId));
         closeAllDropdowns();
-        if (chamadoId) Router.navigate(`#chamado/${chamadoId}`);
+        if (ticketId) Router.navigate(`#chamado/${ticketId}`);
       });
     });
 
@@ -551,11 +558,13 @@ const App = (() => {
       });
     }
 
-    const profileGoUser = document.getElementById('profileGoUser');
-    if (profileGoUser) {
-      profileGoUser.addEventListener('click', () => {
-        closeAllDropdowns();
-        Router.navigate('#configuracoes');
+    // Logout
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = 'login.html';
       });
     }
 
@@ -574,16 +583,16 @@ const App = (() => {
     }
   }
 
-  function bindChamadosEvents() {
+  function bindTicketsEvents() {
     // New ticket button
-    const btnNovo = document.getElementById('btnNovoChamado');
-    if (btnNovo) btnNovo.addEventListener('click', openNewChamado);
+    const btnNew = document.getElementById('btnNewTicket');
+    if (btnNew) btnNew.addEventListener('click', openNewTicket);
 
-    const btnNovoEmpty = document.getElementById('btnNovoChamadoEmpty');
-    if (btnNovoEmpty) btnNovoEmpty.addEventListener('click', openNewChamado);
+    const btnNewEmpty = document.getElementById('btnNewTicketEmpty');
+    if (btnNewEmpty) btnNewEmpty.addEventListener('click', openNewTicket);
 
     // Search
-    const searchInput = document.getElementById('searchChamados');
+    const searchInput = document.getElementById('searchTickets');
     if (searchInput) {
       searchInput.value = currentFilters.search;
       let debounce;
@@ -606,26 +615,26 @@ const App = (() => {
       });
     }
 
-    const filterPrioridade = document.getElementById('filterPrioridade');
-    if (filterPrioridade) {
-      filterPrioridade.value = currentFilters.prioridade;
-      filterPrioridade.addEventListener('change', () => {
-        currentFilters.prioridade = filterPrioridade.value;
+    const filterPriority = document.getElementById('filterPriority');
+    if (filterPriority) {
+      filterPriority.value = currentFilters.priority;
+      filterPriority.addEventListener('change', () => {
+        currentFilters.priority = filterPriority.value;
         applyFilters();
       });
     }
 
-    const filterCategoria = document.getElementById('filterCategoria');
-    if (filterCategoria) {
-      filterCategoria.value = currentFilters.categoria;
-      filterCategoria.addEventListener('change', () => {
-        currentFilters.categoria = filterCategoria.value;
+    const filterCategory = document.getElementById('filterCategory');
+    if (filterCategory) {
+      filterCategory.value = currentFilters.category;
+      filterCategory.addEventListener('change', () => {
+        currentFilters.category = filterCategory.value;
         applyFilters();
       });
     }
 
     // Table sort
-    const table = document.getElementById('chamadosTable');
+    const table = document.getElementById('ticketsTable');
     if (table) {
       table.querySelectorAll('th[data-sort]').forEach(th => {
         th.addEventListener('click', () => {
@@ -645,20 +654,22 @@ const App = (() => {
   // ── Public API ──
   return {
     init,
-    viewChamado,
-    editChamado,
-    saveChamado,
-    confirmDeleteChamado,
-    deleteChamado,
+    viewTicket,
+    editTicket,
+    saveTicket,
+    confirmDeleteTicket,
+    deleteTicket,
     closeModal,
     changeTheme,
     quickStatusChange,
-    quickTecnicoChange,
-    selfAssignChamado
+    quickTechnicianChange,
+    selfAssignTicket,
+    refreshData,
+    updateSidebarBadges
   };
 })();
 
-// ── Inicialização e Route Guard ──
+// ── Initialization & Route Guard ──
 document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -666,7 +677,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // O usuário está logado, podemos carregar os dados
+    // User is logged in, load user data from localStorage
     const userStr = localStorage.getItem('user');
     if (userStr) {
         try {
@@ -680,18 +691,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 .join('')
                 .toUpperCase() || 'HD';
 
+            const rawRole = String(user.role || user.perfil || 'CLIENT').toUpperCase();
+            let role = 'usuario';
+            if (rawRole === 'ADMIN') role = 'admin';
+            else if (rawRole === 'SUPPORT' || rawRole === 'TECNICO') role = 'tecnico';
+            else if (rawRole === 'CLIENT' || rawRole === 'USUARIO') role = 'usuario';
+
             CURRENT_USER = {
                 id: user.id || 1,
-                nome: name,
+                name: name,
                 email: user.email || '',
-                cargo: user.jobTitle || user.cargo || (user.role === 'admin' ? 'Administrador' : user.role === 'tecnico' ? 'Técnico' : 'Colaborador'),
-                departamento: user.department || user.departamento || 'Geral',
-                perfil: user.role || user.perfil || 'usuario',
-                iniciais: initials
+                jobTitle: user.jobTitle || user.cargo || (role === 'admin' ? 'Administrador' : role === 'tecnico' ? 'Técnico' : 'Colaborador'),
+                department: user.department || user.departamento || 'Geral',
+                role: role,
+                rawRole: rawRole,
+                initials: initials
             };
             window.CURRENT_USER = CURRENT_USER;
         } catch (e) {
-            console.error("Erro ao fazer parse do usuário", e);
+            console.error("Error parsing user data", e);
         }
     }
     App.init();

@@ -1,9 +1,10 @@
 /* ============================================
-   HELP DESK PI IV — Componentes de Renderização
-   Todas as views e componentes reutilizáveis
+   HELP DESK PI IV — Rendering Components
+   All views and reusable components
+   Variables in English, labels via i18n
    ============================================ */
 
-// ── Ícones SVG (Lucide-style) ──
+// ── SVG Icons (Lucide-style) ──
 const Icons = {
   headphones: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg>',
   layoutDashboard: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>',
@@ -40,9 +41,10 @@ const Icons = {
   arrowLeft: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>',
   inbox: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>',
   shieldCheck: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>',
+  logOut: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>'
 };
 
-// ── Componente: Sidebar ──
+// ── Component: Sidebar ──
 function renderSidebar() {
   const stats = getDashboardStats();
   return `
@@ -52,32 +54,31 @@ function renderSidebar() {
         <div class="sidebar__logo-text">Help<span>Desk</span></div>
       </div>
 
-
       <nav class="sidebar__nav">
-        <div class="sidebar__section-title">Principal</div>
+        <div class="sidebar__section-title">${i18n.t('main')}</div>
         <a class="sidebar__link active" data-route="dashboard" href="#dashboard">
           <span class="sidebar__link-icon">${Icons.layoutDashboard}</span>
-          <span class="sidebar__link-text">Dashboard</span>
+          <span class="sidebar__link-text">${i18n.t('dashboard')}</span>
         </a>
         <a class="sidebar__link" data-route="chamados" href="#chamados">
           <span class="sidebar__link-icon">${Icons.ticket}</span>
-          <span class="sidebar__link-text">Chamados</span>
-          <span class="sidebar__link-badge">${stats.total}</span>
+          <span class="sidebar__link-text">${i18n.t('tickets')}</span>
+          <span class="sidebar__link-badge" id="sidebarTicketCount">${stats.total}</span>
         </a>
         
-        <div class="sidebar__section-title">Sistema</div>
+        <div class="sidebar__section-title">${i18n.t('system')}</div>
         <a class="sidebar__link" data-route="configuracoes" href="#configuracoes">
           <span class="sidebar__link-icon">${Icons.settings}</span>
-          <span class="sidebar__link-text">Configurações</span>
+          <span class="sidebar__link-text">${i18n.t('settings')}</span>
         </a>
       </nav>
 
       <div class="sidebar__footer">
         <div class="sidebar__user" id="sidebarUser">
-          <div class="sidebar__user-avatar">${CURRENT_USER?.iniciais || 'HD'}</div>
+          <div class="sidebar__user-avatar">${CURRENT_USER?.initials || 'HD'}</div>
           <div class="sidebar__user-info">
-            <div class="sidebar__user-name">${CURRENT_USER?.nome || 'Usuário'}</div>
-            <div class="sidebar__user-role">${CURRENT_USER?.cargo || 'Colaborador'}</div>
+            <div class="sidebar__user-name">${CURRENT_USER?.name || 'Usuário'}</div>
+            <div class="sidebar__user-role">${CURRENT_USER?.jobTitle || 'Colaborador'}</div>
           </div>
         </div>
       </div>
@@ -85,7 +86,7 @@ function renderSidebar() {
   `;
 }
 
-// ── Componente: Header ──
+// ── Component: Header ──
 function renderHeader(breadcrumbs) {
   const themeIcon = ThemeManager.isDark() ? Icons.sun : Icons.moon;
   const unreadCount = getUnreadNotificationsCount();
@@ -107,20 +108,20 @@ function renderHeader(breadcrumbs) {
       <div class="header__right">
         <div class="header__search">
           <span class="header__search-icon">${Icons.search}</span>
-          <input type="text" class="header__search-input" id="globalSearch" placeholder="Buscar chamados..." autocomplete="off">
+          <input type="text" class="header__search-input" id="globalSearch" placeholder="${i18n.t('searchTickets')}" autocomplete="off">
         </div>
-        <button class="header__icon-btn" id="themeToggleBtn" title="Alternar tema">
+        <button class="header__icon-btn" id="themeToggleBtn" title="${i18n.t('toggleTheme')}">
           ${themeIcon}
         </button>
         <div class="header__dropdown-wrapper">
-          <button class="header__icon-btn" id="notificationsBtn" title="Notificações">
+          <button class="header__icon-btn" id="notificationsBtn" title="${i18n.t('notifications')}">
             ${Icons.bell}
             ${unreadCount > 0 ? '<span class="notification-dot"></span>' : ''}
           </button>
           <div class="header__dropdown header__dropdown--notifications" id="notificationsDropdown">
             <div class="dropdown__header">
-              <h3 class="dropdown__title">Notificações</h3>
-              ${unreadCount > 0 ? `<button class="dropdown__action" id="markAllReadBtn">${unreadCount} não lida${unreadCount > 1 ? 's' : ''} — Marcar todas</button>` : '<span class="dropdown__action-muted">Tudo lido</span>'}
+              <h3 class="dropdown__title">${i18n.t('notifications')}</h3>
+              ${unreadCount > 0 ? `<button class="dropdown__action" id="markAllReadBtn">${unreadCount} ${unreadCount > 1 ? i18n.t('unreads') : i18n.t('unread')} — ${i18n.t('markAll')}</button>` : `<span class="dropdown__action-muted">${i18n.t('allRead')}</span>`}
             </div>
             <div class="dropdown__list" id="notificationsList">
               ${renderNotificationsList()}
@@ -128,12 +129,12 @@ function renderHeader(breadcrumbs) {
           </div>
         </div>
         <div class="header__dropdown-wrapper">
-          <div class="header__avatar" id="profileBtn" title="${CURRENT_USER?.nome || 'Usuário'}">${CURRENT_USER?.iniciais || 'HD'}</div>
+          <div class="header__avatar" id="profileBtn" title="${CURRENT_USER?.name || 'Usuário'}">${CURRENT_USER?.initials || 'HD'}</div>
           <div class="header__dropdown header__dropdown--profile" id="profileDropdown">
             <div class="dropdown__profile-header">
-              <div class="dropdown__profile-avatar">${CURRENT_USER?.iniciais || 'HD'}</div>
+              <div class="dropdown__profile-avatar">${CURRENT_USER?.initials || 'HD'}</div>
               <div class="dropdown__profile-info">
-                <div class="dropdown__profile-name">${CURRENT_USER?.nome || 'Usuário'}</div>
+                <div class="dropdown__profile-name">${CURRENT_USER?.name || 'Usuário'}</div>
                 <div class="dropdown__profile-email">${CURRENT_USER?.email || ''}</div>
               </div>
             </div>
@@ -141,16 +142,16 @@ function renderHeader(breadcrumbs) {
             <div class="dropdown__menu">
               <button class="dropdown__menu-item" id="profileGoSettings">
                 ${Icons.settings}
-                <span>Configurações</span>
+                <span>${i18n.t('settings')}</span>
               </button>
               <button class="dropdown__menu-item dropdown__menu-item--danger" id="logoutBtn">
                 ${Icons.logOut}
-                <span>Sair</span>
+                <span>${i18n.t('logout')}</span>
               </button>
             </div>
             <div class="dropdown__profile-footer">
-              <span class="dropdown__footer-role">${Icons.shieldCheck} ${CURRENT_USER?.perfil === 'admin' ? 'Administrador' : CURRENT_USER?.perfil === 'tecnico' ? 'Técnico' : 'Usuário'}</span>
-              <span class="dropdown__footer-dept">${CURRENT_USER?.departamento || ''}</span>
+              <span class="dropdown__footer-role">${Icons.shieldCheck} ${i18n.role(CURRENT_USER?.role || 'usuario')}</span>
+              <span class="dropdown__footer-dept">${CURRENT_USER?.department || ''}</span>
             </div>
           </div>
         </div>
@@ -159,12 +160,12 @@ function renderHeader(breadcrumbs) {
   `;
 }
 
-// ── Componente: Lista de Notificações ──
+// ── Component: Notifications List ──
 function renderNotificationsList() {
-  if (notificacoes.length === 0) {
+  if (notifications.length === 0) {
     return `<div class="dropdown__empty">
       ${Icons.bell}
-      <p>Nenhuma notificação</p>
+      <p>${i18n.t('noNotifications')}</p>
     </div>`;
   }
 
@@ -186,19 +187,19 @@ function renderNotificationsList() {
     resolvido: 'notif--success'
   };
 
-  return notificacoes
-    .sort((a, b) => new Date(b.criadaEm) - new Date(a.criadaEm))
+  return notifications
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .map(n => `
-      <div class="dropdown__notif-item ${n.lida ? '' : 'dropdown__notif-item--unread'}" data-notif-id="${n.id}" data-chamado-id="${n.chamadoId}">
-        <div class="dropdown__notif-icon ${notifColorMap[n.tipo] || 'notif--primary'}">
-          ${notifIconMap[n.tipo] || Icons.bell}
+      <div class="dropdown__notif-item ${n.isRead ? '' : 'dropdown__notif-item--unread'}" data-notif-id="${n.id}" data-chamado-id="${n.ticketId}">
+        <div class="dropdown__notif-icon ${notifColorMap[n.type] || 'notif--primary'}">
+          ${notifIconMap[n.type] || Icons.bell}
         </div>
         <div class="dropdown__notif-content">
-          <div class="dropdown__notif-title">${n.titulo}</div>
-          <p class="dropdown__notif-message">${n.mensagem}</p>
-          <span class="dropdown__notif-time">${formatTimeAgo(n.criadaEm)}</span>
+          <div class="dropdown__notif-title">${n.title}</div>
+          <p class="dropdown__notif-message">${n.message}</p>
+          <span class="dropdown__notif-time">${formatTimeAgo(n.createdAt)}</span>
         </div>
-        ${!n.lida ? '<div class="dropdown__notif-unread-dot"></div>' : ''}
+        ${!n.isRead ? '<div class="dropdown__notif-unread-dot"></div>' : ''}
       </div>
     `).join('');
 }
@@ -207,26 +208,36 @@ function renderNotificationsList() {
 // ── View: Dashboard ──
 function renderDashboard() {
   const stats = getDashboardStats();
-  const recentChamados = [...chamados]
-    .sort((a, b) => new Date(b.criadoEm) - new Date(a.criadoEm))
+  const recentTickets = [...tickets]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 5);
+
+  const connectionBadge = stats.isConnected
+    ? `<span class="badge badge-resolved" style="display:inline-flex; align-items:center; gap:var(--space-1); font-size:var(--text-xs);"><span class="badge-dot"></span>${i18n.t('backendConnected')}</span>`
+    : `<span class="badge badge-closed" style="display:inline-flex; align-items:center; gap:var(--space-1); font-size:var(--text-xs);"><span class="badge-dot"></span>${i18n.t('backendOffline')}</span>`;
 
   return `
     <div class="page-transition-enter">
-      <div class="page-header">
+      <div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:var(--space-4);">
         <div>
-          <h1 class="page-header__title">Dashboard</h1>
-          <p class="page-header__subtitle" style="margin-bottom:0">Visão geral dos chamados do sistema</p>
+          <h1 class="page-header__title">${i18n.t('dashboard')}</h1>
+          <p class="page-header__subtitle" style="margin-bottom:0">${i18n.t('dashboardSubtitle')}</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:var(--space-3);">
+          ${connectionBadge}
+          <button class="btn btn-ghost btn-sm" onclick="App.refreshData()" title="${i18n.t('refreshData')}">
+            ${Icons.loader} ${i18n.t('refreshData')}
+          </button>
         </div>
       </div>
 
-      <!-- Stat Cards -->
+      <!-- Stat Cards (100% Neon DB Real Data) -->
       <div class="stats-grid">
         <div class="stat-card" style="--stat-accent: var(--purple-500)">
           <div class="stat-card__info">
-            <span class="stat-card__label">Total de Chamados</span>
+            <span class="stat-card__label">${i18n.t('totalTickets')}</span>
             <span class="stat-card__value">${stats.total}</span>
-            <span class="stat-card__trend up">${Icons.trendingUp} +12%</span>
+            <span class="stat-card__trend">${stats.total} registros no Neon</span>
           </div>
           <div class="stat-card__icon" style="--stat-icon-bg: var(--color-primary-light); --stat-icon-color: var(--color-primary)">
             ${Icons.clipboardList}
@@ -234,9 +245,9 @@ function renderDashboard() {
         </div>
         <div class="stat-card" style="--stat-accent: var(--status-open)">
           <div class="stat-card__info">
-            <span class="stat-card__label">Abertos</span>
-            <span class="stat-card__value">${stats.abertos}</span>
-            <span class="stat-card__trend up">${Icons.trendingUp} +3</span>
+            <span class="stat-card__label">${i18n.t('openTickets')}</span>
+            <span class="stat-card__value">${stats.newCount}</span>
+            ${stats.total > 0 ? `<span class="stat-card__trend ${stats.newRate > 50 ? 'up' : ''}">${stats.newRate}% do total</span>` : '<span class="stat-card__trend">Aguardando</span>'}
           </div>
           <div class="stat-card__icon" style="--stat-icon-bg: var(--status-open-bg); --stat-icon-color: var(--status-open)">
             ${Icons.inbox}
@@ -244,18 +255,19 @@ function renderDashboard() {
         </div>
         <div class="stat-card" style="--stat-accent: var(--status-progress)">
           <div class="stat-card__info">
-            <span class="stat-card__label">Em Andamento</span>
-            <span class="stat-card__value">${stats.emAndamento}</span>
+            <span class="stat-card__label">${i18n.t('assignedTickets')}</span>
+            <span class="stat-card__value">${stats.assigned}</span>
+            ${stats.total > 0 ? `<span class="stat-card__trend">${stats.assignedRate}% do total</span>` : '<span class="stat-card__trend">Com técnico</span>'}
           </div>
           <div class="stat-card__icon" style="--stat-icon-bg: var(--status-progress-bg); --stat-icon-color: var(--status-progress)">
-            ${Icons.loader}
+            ${Icons.user}
           </div>
         </div>
         <div class="stat-card" style="--stat-accent: var(--status-resolved)">
           <div class="stat-card__info">
-            <span class="stat-card__label">Resolvidos</span>
-            <span class="stat-card__value">${stats.resolvidos}</span>
-            <span class="stat-card__trend up">${Icons.trendingUp} +5</span>
+            <span class="stat-card__label">${i18n.t('resolvedTickets')}</span>
+            <span class="stat-card__value">${stats.closed}</span>
+            ${stats.total > 0 ? `<span class="stat-card__trend up">${Icons.trendingUp} ${stats.resolutionRate}% taxa</span>` : '<span class="stat-card__trend">Finalizados</span>'}
           </div>
           <div class="stat-card__icon" style="--stat-icon-bg: var(--status-resolved-bg); --stat-icon-color: var(--status-resolved)">
             ${Icons.shieldCheck}
@@ -263,49 +275,82 @@ function renderDashboard() {
         </div>
       </div>
 
-      <!-- Chart + Recent -->
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-6);">
-        <!-- Distribution Chart -->
+      <!-- Analytics Breakdown (Status + Categories from Neon DB) -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-6); margin-bottom: var(--space-6);">
+        <!-- Distribution by Status (Real Neon DB Statuses) -->
         <div class="detail-card">
           <div class="detail-card__header">
-            <h3 class="detail-card__title">Distribuição por Status</h3>
+            <h3 class="detail-card__title">${i18n.t('distributionByStatus')}</h3>
           </div>
           <div class="detail-card__body">
             <div class="chart-bar-group">
-              ${renderChartBar('Abertos', stats.abertos, stats.total, 'var(--status-open)')}
-              ${renderChartBar('Em Andamento', stats.emAndamento, stats.total, 'var(--status-progress)')}
-              ${renderChartBar('Pendentes', stats.pendentes, stats.total, 'var(--status-pending)')}
-              ${renderChartBar('Resolvidos', stats.resolvidos, stats.total, 'var(--status-resolved)')}
-              ${renderChartBar('Fechados', stats.fechados, stats.total, 'var(--status-closed)')}
+              ${renderChartBar(i18n.status('NEW'), stats.newCount, stats.total, 'var(--status-open)')}
+              ${renderChartBar(i18n.status('ASSIGNED'), stats.assigned, stats.total, 'var(--status-progress)')}
+              ${renderChartBar(i18n.status('CLOSED'), stats.closed, stats.total, 'var(--status-resolved)')}
+              ${renderChartBar(i18n.status('UNRESOLVED'), stats.unresolved, stats.total, 'var(--status-closed)')}
             </div>
           </div>
         </div>
 
-        <!-- Recent Tickets -->
+        <!-- Distribution by Category (Real Neon DB Categories) -->
         <div class="detail-card">
           <div class="detail-card__header">
-            <h3 class="detail-card__title">Chamados Recentes</h3>
-            <a href="#chamados" class="btn btn-ghost btn-sm">Ver todos</a>
+            <h3 class="detail-card__title">${i18n.t('distributionByCategory')}</h3>
           </div>
-          <div class="detail-card__body" style="padding:0;">
+          <div class="detail-card__body">
+            ${stats.categories && stats.categories.length > 0 ? `
+              <div class="chart-bar-group">
+                ${stats.categories.slice(0, 5).map(cat => renderChartBar(cat.name, cat.count, stats.total, 'var(--purple-500)')).join('')}
+              </div>
+            ` : `
+              <p style="color:var(--color-text-secondary); text-align:center; padding:var(--space-4);">Nenhuma categoria cadastrada.</p>
+            `}
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Tickets Table (Neon DB) -->
+      <div class="detail-card">
+        <div class="detail-card__header">
+          <h3 class="detail-card__title">${i18n.t('recentTickets')}</h3>
+          <a href="#chamados" class="btn btn-ghost btn-sm">${i18n.t('viewAll')}</a>
+        </div>
+        <div class="detail-card__body" style="padding:0;">
+          ${recentTickets.length > 0 ? `
             <table class="data-table">
+              <thead>
+                <tr>
+                  <th>${i18n.t('thId')}</th>
+                  <th>${i18n.t('thTitle')}</th>
+                  <th>${i18n.t('thCategory')}</th>
+                  <th>${i18n.t('thPriority')}</th>
+                  <th>${i18n.t('thStatus')}</th>
+                  <th>${i18n.t('thDate')}</th>
+                </tr>
+              </thead>
               <tbody>
-                ${recentChamados.map(c => {
-                  const status = getStatusById(c.status);
+                ${recentTickets.map(t => {
+                  const catName = t.categoryName || (getCategoryById(t.categoryId)?.name) || '-';
                   return `
                     <tr>
-                      <td class="table-cell-id">#${String(c.id).padStart(4, '0')}</td>
+                      <td class="table-cell-id">#${String(t.id).padStart(4, '0')}</td>
                       <td class="table-cell-title">
-                        <a href="#chamado/${c.id}" class="truncate" style="display:block;max-width:220px;">${c.titulo}</a>
+                        <a href="#chamado/${t.id}" class="truncate" style="display:block;max-width:280px;">${t.title}</a>
                       </td>
-                      <td><span class="badge ${status.classe}"><span class="badge-dot"></span>${status.nome}</span></td>
-                      <td class="table-cell-date">${formatTimeAgo(c.criadoEm)}</td>
+                      <td><span class="badge badge-normal">${catName}</span></td>
+                      <td><span class="badge ${i18n.priorityClass(t.priority)}">${i18n.priority(t.priority)}</span></td>
+                      <td><span class="badge ${i18n.statusClass(t.status)}"><span class="badge-dot"></span>${i18n.status(t.status)}</span></td>
+                      <td class="table-cell-date">${formatTimeAgo(t.createdAt)}</td>
                     </tr>
                   `;
                 }).join('')}
               </tbody>
             </table>
-          </div>
+          ` : `
+            <div class="table-empty" style="padding: var(--space-8);">
+              <p class="table-empty__text">${i18n.t('noTicketsFound')}</p>
+            </div>
+          `}
         </div>
       </div>
     </div>
@@ -327,19 +372,21 @@ function renderChartBar(label, value, total, color) {
   `;
 }
 
-// ── View: Lista de Chamados ──
-function renderChamadosList(filteredData) {
-  const data = filteredData || chamados;
+// ── View: Tickets List ──
+function renderTicketsList(filteredData) {
+  const data = filteredData || tickets;
+  const statusList = i18n.getStatusList();
+  const priorityList = i18n.getPriorityList();
 
   return `
     <div class="page-transition-enter">
       <div class="page-header">
         <div>
-          <h1 class="page-header__title">Chamados</h1>
-          <p class="page-header__subtitle" style="margin-bottom:0">Gerencie todos os chamados do sistema</p>
+          <h1 class="page-header__title">${i18n.t('tickets')}</h1>
+          <p class="page-header__subtitle" style="margin-bottom:0">${i18n.t('ticketsSubtitle')}</p>
         </div>
-        <button class="btn btn-primary" id="btnNovoChamado">
-          ${Icons.plus} Novo Chamado
+        <button class="btn btn-primary" id="btnNewTicket">
+          ${Icons.plus} ${i18n.t('newTicket')}
         </button>
       </div>
 
@@ -348,41 +395,41 @@ function renderChamadosList(filteredData) {
           <div class="table-toolbar__filters">
             <div class="table-toolbar__search">
               <span class="table-toolbar__search-icon">${Icons.search}</span>
-              <input type="text" class="table-toolbar__search-input" id="searchChamados" placeholder="Buscar por título ou ID...">
+              <input type="text" class="table-toolbar__search-input" id="searchTickets" placeholder="${i18n.t('searchPlaceholder')}">
             </div>
             <select class="filter-select" id="filterStatus">
-              <option value="">Todos os Status</option>
-              ${STATUS_LIST.map(s => `<option value="${s.id}">${s.nome}</option>`).join('')}
+              <option value="">${i18n.t('allStatuses')}</option>
+              ${statusList.map(s => `<option value="${s.id}">${s.label}</option>`).join('')}
             </select>
-            <select class="filter-select" id="filterPrioridade">
-              <option value="">Todas as Prioridades</option>
-              ${PRIORIDADES.map(p => `<option value="${p.id}">${p.nome}</option>`).join('')}
+            <select class="filter-select" id="filterPriority">
+              <option value="">${i18n.t('allPriorities')}</option>
+              ${priorityList.map(p => `<option value="${p.id}">${p.label}</option>`).join('')}
             </select>
-            <select class="filter-select" id="filterCategoria">
-              <option value="">Todas as Categorias</option>
-              ${CATEGORIAS.map(c => `<option value="${c.id}">${c.nome}</option>`).join('')}
+            <select class="filter-select" id="filterCategory">
+              <option value="">${i18n.t('allCategories')}</option>
+              ${CATEGORIES.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
             </select>
           </div>
         </div>
 
         ${data.length > 0 ? `
           <div style="overflow-x:auto;">
-            <table class="data-table" id="chamadosTable">
+            <table class="data-table" id="ticketsTable">
               <thead>
                 <tr>
-                  <th data-sort="id">ID <span class="sort-icon">${Icons.chevronsSort}</span></th>
-                  <th data-sort="titulo">Título <span class="sort-icon">${Icons.chevronsSort}</span></th>
-                  <th data-sort="status">Status <span class="sort-icon">${Icons.chevronsSort}</span></th>
-                  <th data-sort="prioridade">Prioridade <span class="sort-icon">${Icons.chevronsSort}</span></th>
-                  <th>Categoria</th>
-                  <th>Solicitante</th>
-                  <th>Técnico</th>
-                  <th data-sort="criadoEm">Data <span class="sort-icon">${Icons.chevronsSort}</span></th>
-                  <th>Ações</th>
+                  <th data-sort="id">${i18n.t('thId')} <span class="sort-icon">${Icons.chevronsSort}</span></th>
+                  <th data-sort="title">${i18n.t('thTitle')} <span class="sort-icon">${Icons.chevronsSort}</span></th>
+                  <th data-sort="status">${i18n.t('thStatus')} <span class="sort-icon">${Icons.chevronsSort}</span></th>
+                  <th data-sort="priority">${i18n.t('thPriority')} <span class="sort-icon">${Icons.chevronsSort}</span></th>
+                  <th>${i18n.t('thCategory')}</th>
+                  <th>${i18n.t('thRequester')}</th>
+                  <th>${i18n.t('thTechnician')}</th>
+                  <th data-sort="createdAt">${i18n.t('thDate')} <span class="sort-icon">${Icons.chevronsSort}</span></th>
+                  <th>${i18n.t('thActions')}</th>
                 </tr>
               </thead>
               <tbody>
-                ${data.map(c => renderChamadoRow(c)).join('')}
+                ${data.map(t => renderTicketRow(t)).join('')}
               </tbody>
             </table>
           </div>
@@ -390,10 +437,10 @@ function renderChamadosList(filteredData) {
         ` : `
           <div class="table-empty">
             <div class="table-empty__icon">${Icons.inbox}</div>
-            <h3 class="table-empty__title">Nenhum chamado encontrado</h3>
-            <p class="table-empty__text">Tente ajustar os filtros ou crie um novo chamado.</p>
-            <button class="btn btn-primary" id="btnNovoChamadoEmpty">
-              ${Icons.plus} Novo Chamado
+            <h3 class="table-empty__title">${i18n.t('noTicketsFound')}</h3>
+            <p class="table-empty__text">${i18n.t('noTicketsHint')}</p>
+            <button class="btn btn-primary" id="btnNewTicketEmpty">
+              ${Icons.plus} ${i18n.t('newTicket')}
             </button>
           </div>
         `}
@@ -402,55 +449,55 @@ function renderChamadosList(filteredData) {
   `;
 }
 
-function renderChamadoRow(c) {
-  const status = getStatusById(c.status);
-  const prioridade = getPrioridadeById(c.prioridade);
-  const categoria = getCategoriaById(c.categoria);
-  const solicitante = getUserById(c.solicitanteId);
-  const tecnico = getUserById(c.tecnicoId);
+function renderTicketRow(t) {
+  const clientName = t.clientName || (getUserById(t.clientId)?.name) || '-';
+  const supportName = t.supportName || (t.supportId ? getUserById(t.supportId)?.name : null);
+  const categoryName = t.categoryName || (getCategoryById(t.categoryId)?.name) || '-';
+  const clientUser = getUserById(t.clientId);
+  const supportUser = t.supportId ? getUserById(t.supportId) : null;
 
   return `
-    <tr data-chamado-id="${c.id}">
-      <td class="table-cell-id">#${String(c.id).padStart(4, '0')}</td>
+    <tr data-ticket-id="${t.id}">
+      <td class="table-cell-id">#${String(t.id).padStart(4, '0')}</td>
       <td class="table-cell-title">
-        <a href="#chamado/${c.id}">${c.titulo}</a>
+        <a href="#chamado/${t.id}">${t.title}</a>
       </td>
       <td>
-        <span class="badge ${status.classe}">
+        <span class="badge ${i18n.statusClass(t.status)}">
           <span class="badge-dot"></span>
-          ${status.nome}
+          ${i18n.status(t.status)}
         </span>
       </td>
       <td>
-        <span class="badge ${prioridade.classe}">${prioridade.nome}</span>
+        <span class="badge ${i18n.priorityClass(t.priority)}">${i18n.priority(t.priority)}</span>
       </td>
-      <td style="font-size:var(--text-sm); color:var(--color-text-secondary)">${categoria ? categoria.nome : '-'}</td>
+      <td style="font-size:var(--text-sm); color:var(--color-text-secondary)">${categoryName}</td>
       <td>
-        ${solicitante ? `
+        ${clientUser ? `
           <div class="table-cell-user">
-            <div class="table-cell-user__avatar">${solicitante.iniciais}</div>
-            <span style="font-size:var(--text-sm)">${solicitante.nome.split(' ')[0]}</span>
+            <div class="table-cell-user__avatar">${clientUser.initials}</div>
+            <span style="font-size:var(--text-sm)">${clientUser.name.split(' ')[0]}</span>
           </div>
-        ` : '-'}
+        ` : `<span style="font-size:var(--text-sm)">${clientName}</span>`}
       </td>
       <td>
-        ${tecnico ? `
+        ${supportUser ? `
           <div class="table-cell-user">
-            <div class="table-cell-user__avatar">${tecnico.iniciais}</div>
-            <span style="font-size:var(--text-sm)">${tecnico.nome.split(' ')[0]}</span>
+            <div class="table-cell-user__avatar">${supportUser.initials}</div>
+            <span style="font-size:var(--text-sm)">${supportUser.name.split(' ')[0]}</span>
           </div>
-        ` : '<span style="font-size:var(--text-sm);color:var(--color-text-tertiary)">Não atribuído</span>'}
+        ` : (supportName ? `<span style="font-size:var(--text-sm)">${supportName}</span>` : `<span style="font-size:var(--text-sm);color:var(--color-text-tertiary)">${i18n.t('notAssigned')}</span>`)}
       </td>
-      <td class="table-cell-date">${formatDate(c.criadoEm)}</td>
+      <td class="table-cell-date">${formatDate(t.createdAt)}</td>
       <td>
         <div class="table-actions">
-          <button class="btn-icon" title="Visualizar" onclick="App.viewChamado(${c.id})">
+          <button class="btn-icon" title="${i18n.t('view')}" onclick="App.viewTicket(${t.id})">
             ${Icons.eye}
           </button>
-          <button class="btn-icon" title="Editar" onclick="App.editChamado(${c.id})">
+          <button class="btn-icon" title="${i18n.t('edit')}" onclick="App.editTicket(${t.id})">
             ${Icons.edit}
           </button>
-          <button class="btn-icon danger" title="Excluir" onclick="App.confirmDeleteChamado(${c.id})">
+          <button class="btn-icon danger" title="${i18n.t('delete')}" onclick="App.confirmDeleteTicket(${t.id})">
             ${Icons.trash}
           </button>
         </div>
@@ -466,51 +513,50 @@ function renderPagination(total) {
 
   return `
     <div class="pagination">
-      <span class="pagination__info">Mostrando ${Math.min(total, perPage)} de ${total} chamados</span>
+      <span class="pagination__info">${i18n.t('showing')} ${Math.min(total, perPage)} ${i18n.t('of')} ${total} ${i18n.t('ticketsCount')}</span>
       <div class="pagination__controls">
-        <button class="pagination__btn" disabled title="Anterior">${Icons.chevronLeft}</button>
-        ${Array.from({length: totalPages}, (_, i) => `
-          <button class="pagination__btn ${i === 0 ? 'active' : ''}">${i + 1}</button>
+        <button class="pagination__btn" disabled title="${i18n.t('previous')}">${Icons.chevronLeft}</button>
+        ${Array.from({length: totalPages}, (_, idx) => `
+          <button class="pagination__btn ${idx === 0 ? 'active' : ''}">${idx + 1}</button>
         `).join('')}
-        <button class="pagination__btn" ${totalPages <= 1 ? 'disabled' : ''} title="Próximo">${Icons.chevronRight}</button>
+        <button class="pagination__btn" ${totalPages <= 1 ? 'disabled' : ''} title="${i18n.t('next')}">${Icons.chevronRight}</button>
       </div>
     </div>
   `;
 }
 
-// ── View: Detalhe do Chamado ──
-function renderChamadoDetail(id) {
-  const chamado = chamados.find(c => c.id === parseInt(id));
-  if (!chamado) {
+// ── View: Ticket Detail ──
+function renderTicketDetail(ticketData) {
+  if (!ticketData) {
     return `
       <div class="page-transition-enter" style="text-align:center; padding:var(--space-16);">
         <div style="font-size:48px; margin-bottom:var(--space-4); opacity:0.3;">${Icons.alertCircle}</div>
-        <h2>Chamado não encontrado</h2>
-        <p style="color:var(--color-text-secondary)">O chamado #${id} não existe ou foi removido.</p>
-        <a href="#chamados" class="btn btn-primary" style="margin-top:var(--space-4);">${Icons.arrowLeft} Voltar aos chamados</a>
+        <h2>${i18n.t('ticketNotFound')}</h2>
+        <p style="color:var(--color-text-secondary)">${i18n.t('ticketNotFoundMsg')}</p>
+        <a href="#chamados" class="btn btn-primary" style="margin-top:var(--space-4);">${Icons.arrowLeft} ${i18n.t('backToTickets')}</a>
       </div>
     `;
   }
 
-  const status = getStatusById(chamado.status);
-  const prioridade = getPrioridadeById(chamado.prioridade);
-  const categoria = getCategoriaById(chamado.categoria);
-  const solicitante = getUserById(chamado.solicitanteId);
-  const tecnico = getUserById(chamado.tecnicoId);
+  const clientName = ticketData.clientName || (getUserById(ticketData.clientId)?.name) || '-';
+  const supportName = ticketData.supportName || (ticketData.supportId ? getUserById(ticketData.supportId)?.name : null) || i18n.t('notAssigned');
+  const categoryName = ticketData.categoryName || (getCategoryById(ticketData.categoryId)?.name) || '-';
+  const statusList = i18n.getStatusList();
+  const technicians = USERS.filter(u => isTIUser(u));
 
   return `
     <div class="page-transition-enter">
       <div class="page-header">
         <div style="display:flex; align-items:center; gap:var(--space-3);">
-          <a href="#chamados" class="btn btn-ghost btn-icon" title="Voltar">${Icons.arrowLeft}</a>
+          <a href="#chamados" class="btn btn-ghost btn-icon" title="${i18n.t('backToTickets')}">${Icons.arrowLeft}</a>
           <div>
-            <h1 class="page-header__title">Chamado #${String(chamado.id).padStart(4, '0')}</h1>
-            <p class="page-header__subtitle" style="margin-bottom:0">Aberto em ${formatDateTime(chamado.criadoEm)}</p>
+            <h1 class="page-header__title">${i18n.t('tickets')} #${String(ticketData.id).padStart(4, '0')}</h1>
+            <p class="page-header__subtitle" style="margin-bottom:0">${i18n.t('openedAt')} ${formatDateTime(ticketData.createdAt)}</p>
           </div>
         </div>
         <div style="display:flex; gap:var(--space-2);">
-          <button class="btn btn-secondary" onclick="App.editChamado(${chamado.id})">${Icons.edit} Editar</button>
-          <button class="btn btn-danger" onclick="App.confirmDeleteChamado(${chamado.id})">${Icons.trash} Excluir</button>
+          <button class="btn btn-secondary" onclick="App.editTicket(${ticketData.id})">${Icons.edit} ${i18n.t('edit')}</button>
+          <button class="btn btn-danger" onclick="App.confirmDeleteTicket(${ticketData.id})">${Icons.trash} ${i18n.t('delete')}</button>
         </div>
       </div>
 
@@ -520,12 +566,12 @@ function renderChamadoDetail(id) {
           <div class="ticket-header">
             <div class="ticket-header__top">
               <div>
-                <span class="ticket-header__id">#${String(chamado.id).padStart(4, '0')}</span>
-                <h2 class="ticket-header__title">${chamado.titulo}</h2>
+                <span class="ticket-header__id">#${String(ticketData.id).padStart(4, '0')}</span>
+                <h2 class="ticket-header__title">${ticketData.title}</h2>
               </div>
               <div class="ticket-header__badges">
-                <span class="badge ${status.classe}"><span class="badge-dot"></span>${status.nome}</span>
-                <span class="badge ${prioridade.classe}">${prioridade.nome}</span>
+                <span class="badge ${i18n.statusClass(ticketData.status)}"><span class="badge-dot"></span>${i18n.status(ticketData.status)}</span>
+                <span class="badge ${i18n.priorityClass(ticketData.priority)}">${i18n.priority(ticketData.priority)}</span>
               </div>
             </div>
           </div>
@@ -533,36 +579,37 @@ function renderChamadoDetail(id) {
           <!-- Description -->
           <div class="detail-card">
             <div class="detail-card__header">
-              <h3 class="detail-card__title">Descrição</h3>
+              <h3 class="detail-card__title">${i18n.t('description')}</h3>
             </div>
             <div class="detail-card__body">
-              <p style="margin-bottom:0; line-height:1.7; color:var(--color-text-secondary)">${chamado.descricao}</p>
+              <p style="margin-bottom:0; line-height:1.7; color:var(--color-text-secondary)">${ticketData.description}</p>
             </div>
           </div>
 
           <!-- Timeline -->
           <div class="detail-card">
             <div class="detail-card__header">
-              <h3 class="detail-card__title">Atividade</h3>
+              <h3 class="detail-card__title">${i18n.t('activity')}</h3>
             </div>
             <div class="detail-card__body">
               <div class="timeline">
-                ${chamado.timeline.map(item => {
-                  const autor = getUserById(item.autorId);
+                ${(ticketData.timeline || []).map(item => {
+                  const authorName = item.authorName || (getUserById(item.authorId)?.name) || i18n.t('systemAuthor');
                   let icon = Icons.messageSquare;
-                  if (item.tipo === 'criacao') icon = Icons.plus;
-                  if (item.tipo === 'status') icon = Icons.checkCircle;
-                  if (item.tipo === 'atribuicao') icon = Icons.user;
+                  if (item.eventType === 'CREATION') icon = Icons.plus;
+                  if (item.eventType === 'STATUS_CHANGE') icon = Icons.checkCircle;
+                  if (item.eventType === 'ASSIGNMENT') icon = Icons.user;
+                  if (item.eventType === 'PRIORITY_CHANGE') icon = Icons.tag;
 
                   return `
                     <div class="timeline-item">
                       <div class="timeline-item__dot">${icon}</div>
                       <div class="timeline-item__content">
                         <div class="timeline-item__header">
-                          <span class="timeline-item__author">${autor ? autor.nome : 'Sistema'}</span>
-                          <span class="timeline-item__time">${formatDateTime(item.data)}</span>
+                          <span class="timeline-item__author">${authorName}</span>
+                          <span class="timeline-item__time">${formatDateTime(item.createdAt)}</span>
                         </div>
-                        <div class="timeline-item__body">${item.mensagem}</div>
+                        <div class="timeline-item__body">${item.message}</div>
                       </div>
                     </div>
                   `;
@@ -576,75 +623,68 @@ function renderChamadoDetail(id) {
         <div class="ticket-detail__sidebar">
           <div class="detail-card">
             <div class="detail-card__header">
-              <h3 class="detail-card__title">Informações</h3>
+              <h3 class="detail-card__title">${i18n.t('information')}</h3>
             </div>
             <div class="detail-card__body">
               <div class="info-list">
                 <div class="info-item">
                   <span class="info-item__icon">${Icons.user}</span>
                   <div class="info-item__content">
-                    <span class="info-item__label">Solicitante</span>
-                    <span class="info-item__value">${solicitante ? solicitante.nome : '-'}</span>
+                    <span class="info-item__label">${i18n.t('requester')}</span>
+                    <span class="info-item__value">${clientName}</span>
                   </div>
                 </div>
                 <div class="info-item">
                   <span class="info-item__icon">${Icons.user}</span>
                   <div class="info-item__content">
-                    <span class="info-item__label">Técnico Responsável</span>
-                    <span class="info-item__value">${tecnico ? tecnico.nome : 'Não atribuído'}</span>
+                    <span class="info-item__label">${i18n.t('technicianResponsible')}</span>
+                    <span class="info-item__value">${supportName}</span>
                   </div>
                 </div>
                 <div class="info-item">
                   <span class="info-item__icon">${Icons.tag}</span>
                   <div class="info-item__content">
-                    <span class="info-item__label">Categoria</span>
-                    <span class="info-item__value">${categoria ? categoria.nome : '-'}</span>
+                    <span class="info-item__label">${i18n.t('category')}</span>
+                    <span class="info-item__value">${categoryName}</span>
                   </div>
                 </div>
                 <div class="info-item">
                   <span class="info-item__icon">${Icons.calendar}</span>
                   <div class="info-item__content">
-                    <span class="info-item__label">Criado em</span>
-                    <span class="info-item__value">${formatDateTime(chamado.criadoEm)}</span>
+                    <span class="info-item__label">${i18n.t('createdAt')}</span>
+                    <span class="info-item__value">${formatDateTime(ticketData.createdAt)}</span>
                   </div>
                 </div>
                 <div class="info-item">
                   <span class="info-item__icon">${Icons.clock}</span>
                   <div class="info-item__content">
-                    <span class="info-item__label">Última Atualização</span>
-                    <span class="info-item__value">${formatDateTime(chamado.atualizadoEm)}</span>
-                  </div>
-                </div>
-                <div class="info-item">
-                  <span class="info-item__icon">${Icons.clock}</span>
-                  <div class="info-item__content">
-                    <span class="info-item__label">SLA</span>
-                    <span class="info-item__value">${formatDateTime(chamado.sla)}</span>
+                    <span class="info-item__label">${i18n.t('lastUpdate')}</span>
+                    <span class="info-item__value">${formatDateTime(ticketData.updatedAt)}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Quick Actions (apenas TI) -->
-          ${CURRENT_USER && (CURRENT_USER.perfil === 'admin' || CURRENT_USER.perfil === 'tecnico') ? `
+          <!-- Quick Actions (only for TI) -->
+          ${isTIUser(CURRENT_USER) ? `
           <div class="detail-card">
             <div class="detail-card__header">
-              <h3 class="detail-card__title">Ações Rápidas</h3>
+              <h3 class="detail-card__title">${i18n.t('quickActions')}</h3>
             </div>
             <div class="detail-card__body" style="display:flex; flex-direction:column; gap:var(--space-2);">
-              ${!chamado.tecnicoId ? `
-                <button class="btn btn-primary" onclick="App.selfAssignChamado(${chamado.id})" style="width:100%;">
-                  ${Icons.user} Me Atribuir
+              ${!ticketData.supportId ? `
+                <button class="btn btn-primary" onclick="App.selfAssignTicket(${ticketData.id})" style="width:100%;">
+                  ${Icons.user} ${i18n.t('selfAssign')}
                 </button>
               ` : ''}
-              <select class="form-select" id="quickStatusChange" onchange="App.quickStatusChange(${chamado.id}, this.value)">
-                <option value="" disabled selected>Alterar Status...</option>
-                ${STATUS_LIST.map(s => `<option value="${s.id}" ${s.id === chamado.status ? 'disabled' : ''}>${s.nome}</option>`).join('')}
+              <select class="form-select" id="quickStatusChange" onchange="App.quickStatusChange(${ticketData.id}, this.value)">
+                <option value="" disabled selected>${i18n.t('changeStatus')}</option>
+                ${statusList.map(s => `<option value="${s.id}" ${s.id === ticketData.status ? 'disabled' : ''}>${s.label}</option>`).join('')}
               </select>
-              <select class="form-select" id="quickTecnicoChange" onchange="App.quickTecnicoChange(${chamado.id}, this.value)">
-                <option value="" disabled selected>Atribuir Técnico...</option>
-                ${USERS.filter(u => u.perfil === 'tecnico' || u.perfil === 'admin').map(u => `<option value="${u.id}" ${u.id === chamado.tecnicoId ? 'disabled' : ''}>${u.nome}</option>`).join('')}
+              <select class="form-select" id="quickTechnicianChange" onchange="App.quickTechnicianChange(${ticketData.id}, this.value)">
+                <option value="" disabled selected>${i18n.t('assignTechnician')}</option>
+                ${technicians.map(u => `<option value="${u.id}" ${u.id === ticketData.supportId ? 'disabled' : ''}>${u.name}</option>`).join('')}
               </select>
             </div>
           </div>
@@ -655,24 +695,24 @@ function renderChamadoDetail(id) {
   `;
 }
 
-// ── View: Configurações ──
-function renderConfiguracoes() {
+// ── View: Settings ──
+function renderSettings() {
   const currentTheme = ThemeManager.getTheme();
 
   return `
     <div class="page-transition-enter">
       <div class="page-header">
         <div>
-          <h1 class="page-header__title">Configurações</h1>
+          <h1 class="page-header__title">${i18n.t('settings')}</h1>
           <p class="page-header__subtitle" style="margin-bottom:0">Personalize sua experiência no sistema</p>
         </div>
       </div>
 
       <div class="settings-grid">
-        <!-- Aparência -->
+        <!-- Appearance -->
         <div class="settings-card">
           <div class="settings-card__header">
-            <h3 class="settings-card__title">Aparência</h3>
+            <h3 class="settings-card__title">${i18n.t('appearance')}</h3>
             <p class="settings-card__desc">Escolha o tema de sua preferência</p>
           </div>
           <div class="settings-card__body">
@@ -685,7 +725,7 @@ function renderConfiguracoes() {
                     <div class="theme-option__preview-mock-content"></div>
                   </div>
                 </div>
-                <div class="theme-option__label">${Icons.sun} Claro</div>
+                <div class="theme-option__label">${Icons.sun} ${i18n.t('lightTheme')}</div>
               </label>
               <label class="theme-option theme-option--dark">
                 <input type="radio" name="theme" value="dark" ${currentTheme === 'dark' ? 'checked' : ''} onchange="App.changeTheme('dark')">
@@ -695,35 +735,35 @@ function renderConfiguracoes() {
                     <div class="theme-option__preview-mock-content"></div>
                   </div>
                 </div>
-                <div class="theme-option__label">${Icons.moon} Escuro</div>
+                <div class="theme-option__label">${Icons.moon} ${i18n.t('darkTheme')}</div>
               </label>
             </div>
           </div>
         </div>
 
-        <!-- Perfil -->
+        <!-- Profile -->
         <div class="settings-card">
           <div class="settings-card__header">
-            <h3 class="settings-card__title">Perfil</h3>
+            <h3 class="settings-card__title">${i18n.t('profile')}</h3>
             <p class="settings-card__desc">Informações da sua conta</p>
           </div>
           <div class="settings-card__body">
             <div class="profile-info">
-              <div class="profile-avatar">${CURRENT_USER?.iniciais || 'HD'}</div>
+              <div class="profile-avatar">${CURRENT_USER?.initials || 'HD'}</div>
               <div class="profile-details">
-                <div class="profile-name">${CURRENT_USER?.nome || 'Usuário'}</div>
-                <div class="profile-role">${CURRENT_USER?.cargo || 'Colaborador'}</div>
+                <div class="profile-name">${CURRENT_USER?.name || 'Usuário'}</div>
+                <div class="profile-role">${CURRENT_USER?.jobTitle || 'Colaborador'}</div>
                 <div class="profile-email">${CURRENT_USER?.email || ''}</div>
               </div>
             </div>
             <div style="margin-top:var(--space-5); display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
               <div>
                 <span class="info-item__label">Departamento</span>
-                <span class="info-item__value">${CURRENT_USER?.departamento || '-'}</span>
+                <span class="info-item__value">${CURRENT_USER?.department || '-'}</span>
               </div>
               <div>
-                <span class="info-item__label">Perfil</span>
-                <span class="info-item__value" style="text-transform:capitalize">${CURRENT_USER?.perfil === 'admin' ? 'Administrador' : CURRENT_USER?.perfil === 'tecnico' ? 'Técnico' : 'Usuário'}</span>
+                <span class="info-item__label">${i18n.t('profile')}</span>
+                <span class="info-item__value" style="text-transform:capitalize">${i18n.role(CURRENT_USER?.role || 'usuario')}</span>
               </div>
             </div>
           </div>
@@ -733,128 +773,130 @@ function renderConfiguracoes() {
   `;
 }
 
-// ── Modal: Criar/Editar Chamado ──
-function renderChamadoModal(chamado = null) {
-  const isEdit = chamado !== null;
-  const title = isEdit ? 'Editar Chamado' : 'Novo Chamado';
-  const tecnicos = USERS.filter(u => u.perfil === 'tecnico' || u.perfil === 'admin');
-  const isTI = CURRENT_USER && (CURRENT_USER.perfil === 'admin' || CURRENT_USER.perfil === 'tecnico');
+// ── Modal: Create/Edit Ticket ──
+function renderTicketModal(ticket = null) {
+  const isEdit = ticket !== null;
+  const title = isEdit ? i18n.t('editTicket') : i18n.t('createTicket');
+  const technicians = USERS.filter(u => isTIUser(u));
+  const isTI = isTIUser(CURRENT_USER);
+  const statusList = i18n.getStatusList();
+  const priorityList = i18n.getPriorityList();
 
-  // Seção de Status + Técnico — só aparece na edição e apenas para TI
-  const statusTecnicoSection = isEdit && isTI ? `
+  // Status + Technician section — only visible in edit mode for TI users
+  const statusTechSection = isEdit && isTI ? `
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label" for="chamadoStatus">Status</label>
-                <select class="form-select" id="chamadoStatus">
-                  ${STATUS_LIST.map(s => `<option value="${s.id}" ${chamado.status === s.id ? 'selected' : ''}>${s.nome}</option>`).join('')}
+                <label class="form-label" for="ticketStatus">${i18n.t('statusLabel')}</label>
+                <select class="form-select" id="ticketStatus">
+                  ${statusList.map(s => `<option value="${s.id}" ${ticket.status === s.id ? 'selected' : ''}>${s.label}</option>`).join('')}
                 </select>
               </div>
               <div class="form-group">
-                <label class="form-label" for="chamadoTecnico">Técnico Responsável</label>
-                <select class="form-select" id="chamadoTecnico">
-                  <option value="">Não atribuído</option>
-                  ${tecnicos.map(t => `<option value="${t.id}" ${chamado.tecnicoId === t.id ? 'selected' : ''}>${t.nome}</option>`).join('')}
+                <label class="form-label" for="ticketTechnician">${i18n.t('technicianLabel')}</label>
+                <select class="form-select" id="ticketTechnician">
+                  <option value="">${i18n.t('notAssigned')}</option>
+                  ${technicians.map(u => `<option value="${u.id}" ${ticket.supportId === u.id ? 'selected' : ''}>${u.name}</option>`).join('')}
                 </select>
               </div>
             </div>
   ` : '';
 
-  // Seção de Solicitante — só aparece na edição e apenas para TI (para poder alterar)
-  const solicitanteSection = isEdit && isTI ? `
+  // Requester section — only visible in edit mode for TI users
+  const requesterSection = isEdit && isTI ? `
             <div class="form-group">
-              <label class="form-label" for="chamadoSolicitante">Solicitante</label>
-              <select class="form-select" id="chamadoSolicitante">
-                ${USERS.map(u => `<option value="${u.id}" ${chamado.solicitanteId === u.id ? 'selected' : ''}>${u.nome} (${u.departamento || 'Geral'})</option>`).join('')}
+              <label class="form-label" for="ticketRequester">${i18n.t('requesterLabel')}</label>
+              <select class="form-select" id="ticketRequester">
+                ${USERS.map(u => `<option value="${u.id}" ${ticket.clientId === u.id ? 'selected' : ''}>${u.name} (${u.department || 'Geral'})</option>`).join('')}
               </select>
             </div>
   ` : '';
 
-  // Na criação, mostra quem está criando como info (não editável)
-  const solicitanteInfo = !isEdit && CURRENT_USER ? `
+  // In creation mode, show who is creating (read-only)
+  const requesterInfo = !isEdit && CURRENT_USER ? `
             <div class="form-group">
-              <label class="form-label">Solicitante</label>
+              <label class="form-label">${i18n.t('requesterLabel')}</label>
               <div class="form-input form-input--readonly" style="background: var(--bg-tertiary); cursor: default; display: flex; align-items: center; gap: var(--space-2);">
                 ${Icons.user}
-                <span>${CURRENT_USER.nome} — ${CURRENT_USER.departamento || 'Geral'}</span>
+                <span>${CURRENT_USER.name} — ${CURRENT_USER.department || 'Geral'}</span>
               </div>
             </div>
   ` : '';
 
   return `
-    <div class="modal-overlay active" id="chamadoModal">
+    <div class="modal-overlay active" id="ticketModal">
       <div class="modal modal--lg">
         <div class="modal__header">
           <h2 class="modal__title">${title}</h2>
           <button class="modal__close" onclick="App.closeModal()">${Icons.x}</button>
         </div>
         <div class="modal__body">
-          <form id="chamadoForm" novalidate>
-            <input type="hidden" id="chamadoId" value="${isEdit ? chamado.id : ''}">
+          <form id="ticketForm" novalidate>
+            <input type="hidden" id="ticketId" value="${isEdit ? ticket.id : ''}">
             
             <div class="form-group">
-              <label class="form-label" for="chamadoTitulo">Título <span class="required">*</span></label>
-              <input type="text" class="form-input" id="chamadoTitulo" placeholder="Descreva o problema brevemente..." value="${isEdit ? chamado.titulo : ''}" required>
-              <span class="form-error" id="errorTitulo"></span>
+              <label class="form-label" for="ticketTitle">${i18n.t('titleLabel')} <span class="required">*</span></label>
+              <input type="text" class="form-input" id="ticketTitle" placeholder="${i18n.t('titlePlaceholder')}" value="${isEdit ? ticket.title : ''}" required>
+              <span class="form-error" id="errorTitle"></span>
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="chamadoDescricao">Descrição <span class="required">*</span></label>
-              <textarea class="form-textarea" id="chamadoDescricao" placeholder="Descreva o problema com detalhes..." required>${isEdit ? chamado.descricao : ''}</textarea>
-              <span class="form-error" id="errorDescricao"></span>
+              <label class="form-label" for="ticketDescription">${i18n.t('descriptionLabel')} <span class="required">*</span></label>
+              <textarea class="form-textarea" id="ticketDescription" placeholder="${i18n.t('descriptionPlaceholder')}" required>${isEdit ? ticket.description : ''}</textarea>
+              <span class="form-error" id="errorDescription"></span>
             </div>
 
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label" for="chamadoCategoria">Categoria <span class="required">*</span></label>
-                <select class="form-select" id="chamadoCategoria" required>
-                  <option value="">Selecione...</option>
-                  ${CATEGORIAS.map(c => `<option value="${c.id}" ${isEdit && chamado.categoria === c.id ? 'selected' : ''}>${c.nome}</option>`).join('')}
+                <label class="form-label" for="ticketCategory">${i18n.t('categoryLabel')} <span class="required">*</span></label>
+                <select class="form-select" id="ticketCategory" required>
+                  <option value="">${i18n.t('categorySelect')}</option>
+                  ${CATEGORIES.map(c => `<option value="${c.id}" ${isEdit && ticket.categoryId === c.id ? 'selected' : ''}>${c.name}</option>`).join('')}
                 </select>
-                <span class="form-error" id="errorCategoria"></span>
+                <span class="form-error" id="errorCategory"></span>
               </div>
               <div class="form-group">
-                <label class="form-label" for="chamadoPrioridade">Prioridade</label>
-                <select class="form-select" id="chamadoPrioridade">
-                  ${PRIORIDADES.map(p => `<option value="${p.id}" ${isEdit && chamado.prioridade === p.id ? 'selected' : (!isEdit && p.id === 'normal' ? 'selected' : '')}>${p.nome}</option>`).join('')}
+                <label class="form-label" for="ticketPriority">${i18n.t('priorityLabel')}</label>
+                <select class="form-select" id="ticketPriority">
+                  ${priorityList.map(p => `<option value="${p.id}" ${isEdit && ticket.priority === p.id ? 'selected' : (!isEdit && p.id === 'MEDIUM' ? 'selected' : '')}>${p.label}</option>`).join('')}
                 </select>
               </div>
             </div>
 
-            ${statusTecnicoSection}
-            ${solicitanteSection}
-            ${solicitanteInfo}
+            ${statusTechSection}
+            ${requesterSection}
+            ${requesterInfo}
           </form>
         </div>
         <div class="modal__footer">
-          <button class="btn btn-secondary" onclick="App.closeModal()">Cancelar</button>
-          <button class="btn btn-primary" onclick="App.saveChamado()">${isEdit ? 'Salvar Alterações' : 'Criar Chamado'}</button>
+          <button class="btn btn-secondary" onclick="App.closeModal()">${i18n.t('cancel')}</button>
+          <button class="btn btn-primary" onclick="App.saveTicket()">${isEdit ? i18n.t('saveChanges') : i18n.t('createTicketBtn')}</button>
         </div>
       </div>
     </div>
   `;
 }
 
-// ── Modal: Confirmação de Exclusão ──
-function renderDeleteModal(chamado) {
+// ── Modal: Delete Confirmation ──
+function renderDeleteModal(ticket) {
   return `
     <div class="modal-overlay active" id="deleteModal">
       <div class="modal modal--sm">
         <div class="modal__header">
-          <h2 class="modal__title">Confirmar Exclusão</h2>
+          <h2 class="modal__title">${i18n.t('confirmDelete')}</h2>
           <button class="modal__close" onclick="App.closeModal()">${Icons.x}</button>
         </div>
         <div class="modal__body">
           <p class="confirm-dialog__text">
-            Tem certeza que deseja excluir o chamado 
-            <span class="confirm-dialog__highlight">#${String(chamado.id).padStart(4, '0')} — ${chamado.titulo}</span>?
+            ${i18n.t('confirmDeleteMsg')} 
+            <span class="confirm-dialog__highlight">#${String(ticket.id).padStart(4, '0')} — ${ticket.title}</span>?
           </p>
           <p class="confirm-dialog__text" style="margin-top:var(--space-3); color:var(--color-danger);">
-            Esta ação não pode ser desfeita.
+            ${i18n.t('cannotUndo')}
           </p>
         </div>
         <div class="modal__footer">
-          <button class="btn btn-secondary" onclick="App.closeModal()">Cancelar</button>
-          <button class="btn btn-danger" onclick="App.deleteChamado(${chamado.id})">Excluir</button>
+          <button class="btn btn-secondary" onclick="App.closeModal()">${i18n.t('cancel')}</button>
+          <button class="btn btn-danger" onclick="App.deleteTicket(${ticket.id})">${i18n.t('delete')}</button>
         </div>
       </div>
     </div>

@@ -151,6 +151,47 @@ public class TicketDao {
         return null;
     }
 
+    public boolean deleteById(int id) {
+        Connection conn = null;
+        try {
+            conn = Database.getConnection();
+            conn.setAutoCommit(false);
+
+            // Remove timeline entries first (FK dependency)
+            try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM ticket_timeline WHERE ticket_id = ?")) {
+                stmt.setInt(1, id);
+                stmt.executeUpdate();
+            }
+
+            // Remove notifications linked to this ticket
+            try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM notifications WHERE ticket_id = ?")) {
+                stmt.setInt(1, id);
+                stmt.executeUpdate();
+            }
+
+            // Remove the ticket
+            boolean deleted;
+            try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM tickets WHERE id = ?")) {
+                stmt.setInt(1, id);
+                deleted = stmt.executeUpdate() > 0;
+            }
+
+            conn.commit();
+            return deleted;
+        } catch (SQLException e) {
+            System.err.println("Erro ao deletar chamado: " + e.getMessage());
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            }
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); } catch (SQLException ex) { ex.printStackTrace(); }
+            }
+            Database.releaseConnection(conn);
+        }
+        return false;
+    }
+
     public boolean updateStatus(int id, String newStatus, Integer newSupportId) {
         String sql = "UPDATE tickets SET status = ?, support_id = COALESCE(?, support_id), " +
                      "closed_at = CASE WHEN ? IN ('CLOSED', 'UNRESOLVED') THEN CURRENT_TIMESTAMP ELSE closed_at END " +

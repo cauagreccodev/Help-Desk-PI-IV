@@ -130,6 +130,14 @@ public class TicketHandler implements HttpHandler {
                     } else {
                         HttpHelper.sendError(exchange, 404, "Chamado não encontrado");
                     }
+                } else if ("DELETE".equalsIgnoreCase(method)) {
+                    // Deletar chamado
+                    boolean deleted = ticketDao.deleteById(ticketId);
+                    if (deleted) {
+                        HttpHelper.sendJson(exchange, 200, "{\"success\": true}");
+                    } else {
+                        HttpHelper.sendError(exchange, 404, "Chamado não encontrado");
+                    }
                 } else {
                     HttpHelper.sendError(exchange, 405, "Method not allowed");
                 }

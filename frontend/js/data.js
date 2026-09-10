@@ -1,109 +1,125 @@
 /* ============================================
-   HELP DESK PI IV — Dados Fictícios
-   Estrutura preparada para integração futura
-   com banco de dados via Java WebSocket
+   HELP DESK PI IV — Data Layer
+   Global state, Neon DB synchronization & analytics
+   All metrics strictly derived from real backend data
    ============================================ */
 
-// ── Usuários ──
-const USERS = [];
-
-// ── Categorias ──
-const CATEGORIAS = [
-  { id: 1, nome: 'Hardware' },
-  { id: 2, nome: 'Software' },
-  { id: 3, nome: 'Rede / Internet' },
-  { id: 4, nome: 'E-mail' },
-  { id: 5, nome: 'Acesso / Permissões' },
-  { id: 6, nome: 'Impressora' },
-  { id: 7, nome: 'Telefonia' },
-  { id: 8, nome: 'Outros' }
-];
-
-// ── Status possíveis ──
-const STATUS_LIST = [
-  { id: 'novo',         nome: 'Novo',          classe: 'badge-new' },
-  { id: 'atribuido',    nome: 'Atribuído',     classe: 'badge-assigned' },
-  { id: 'em_andamento', nome: 'Em Andamento',  classe: 'badge-progress' },
-  { id: 'pendente',     nome: 'Pendente',      classe: 'badge-pending' },
-  { id: 'resolvido',    nome: 'Resolvido',     classe: 'badge-resolved' },
-  { id: 'fechado',      nome: 'Fechado',       classe: 'badge-closed' }
-];
-
-// ── Prioridades ──
-const PRIORIDADES = [
-  { id: 'baixa',   nome: 'Baixa',   classe: 'badge-low' },
-  { id: 'normal',  nome: 'Normal',  classe: 'badge-normal' },
-  { id: 'media',   nome: 'Média',   classe: 'badge-medium' },
-  { id: 'alta',    nome: 'Alta',    classe: 'badge-high' },
-  { id: 'urgente', nome: 'Urgente', classe: 'badge-urgent' }
-];
-
-// ── Chamados ──
-let chamados = [];
-
-// ── Usuário logado (simulação) ──
+// ── Global State (populated directly by Neon API) ──
+let tickets = [];
+let USERS = [];
+let CATEGORIES = [];
 let CURRENT_USER = null;
+let notifications = [];
 
-// ── Notificações (dados fictícios para teste) ──
-let notificacoes = [];
+// ── Connection & Synchronization State ──
+let isBackendConnected = false;
+let lastSyncTimestamp = null;
 
-// ── Helpers de Notificações ──
+// ── Notification Helpers (synced with Neon DB) ──
 function getUnreadNotificationsCount() {
-  return notificacoes.filter(n => !n.lida).length;
+  return notifications.filter(n => !n.isRead).length;
 }
 
-function markNotificationAsRead(id) {
-  const notif = notificacoes.find(n => n.id === id);
-  if (notif) notif.lida = true;
+async function markNotificationAsRead(id) {
+  const notif = notifications.find(n => n.id === id);
+  if (notif) notif.isRead = true;
+  try {
+    await Api.markNotificationAsRead(id);
+  } catch (err) {
+    console.warn('Could not sync notification read status to backend:', err);
+  }
 }
 
-function markAllNotificationsAsRead() {
-  notificacoes.forEach(n => n.lida = true);
+async function markAllNotificationsAsRead() {
+  notifications.forEach(n => n.isRead = true);
+  try {
+    const unread = notifications.filter(n => !n.isRead);
+    await Promise.all(unread.map(n => Api.markNotificationAsRead(n.id)));
+  } catch (err) {
+    console.warn('Could not sync all notifications read status to backend:', err);
+  }
 }
 
-
-// ── Helper: próximo ID ──
-function getNextId() {
-  return chamados.length > 0 ? Math.max(...chamados.map(c => c.id)) + 1 : 1;
-}
-
-// ── Helper: buscar usuário por ID ──
+// ── Helpers: Users & Categories ──
 function getUserById(id) {
   return USERS.find(u => u.id === id) || null;
 }
 
-// ── Helper: buscar categoria por ID ──
-function getCategoriaById(id) {
-  return CATEGORIAS.find(c => c.id === id) || null;
+function getUserByName(name) {
+  return USERS.find(u => u.name === name) || null;
 }
 
-// ── Helper: buscar status por ID ──
-function getStatusById(id) {
-  return STATUS_LIST.find(s => s.id === id) || null;
+function getCategoryById(id) {
+  return CATEGORIES.find(c => c.id === id) || null;
 }
 
-// ── Helper: buscar prioridade por ID ──
-function getPrioridadeById(id) {
-  return PRIORIDADES.find(p => p.id === id) || null;
+function isTIUser(user = CURRENT_USER) {
+  if (!user || !user.role) return false;
+  const r = String(user.role).toUpperCase();
+  return r === 'ADMIN' || r === 'SUPPORT' || r === 'TECNICO' || user.role === 'admin' || user.role === 'tecnico';
 }
 
-// ── Estatísticas do Dashboard ──
+// ── Dashboard Statistics (100% computed from real Neon DB data) ──
 function getDashboardStats() {
-  const total = chamados.length;
-  const novos = chamados.filter(c => c.status === 'novo').length;
-  const atribuidos = chamados.filter(c => c.status === 'atribuido').length;
-  const emAndamento = chamados.filter(c => c.status === 'em_andamento').length;
-  const resolvidos = chamados.filter(c => c.status === 'resolvido').length;
-  const pendentes = chamados.filter(c => c.status === 'pendente').length;
-  const fechados = chamados.filter(c => c.status === 'fechado').length;
-  const abertos = novos + atribuidos; // retrocompatibilidade
+  const total = tickets.length;
 
-  return { total, novos, atribuidos, abertos, emAndamento, resolvidos, pendentes, fechados };
+  // Real Neon DB Status counts (CHECK: status IN ('NEW', 'ASSIGNED', 'CLOSED', 'UNRESOLVED'))
+  const newCount   = tickets.filter(t => t.status === 'NEW').length;
+  const assigned   = tickets.filter(t => t.status === 'ASSIGNED').length;
+  const closed     = tickets.filter(t => t.status === 'CLOSED').length;
+  const unresolved = tickets.filter(t => t.status === 'UNRESOLVED').length;
+  const open       = newCount + assigned;
+
+  // Real percentage metrics derived from Neon records
+  const resolutionRate = total > 0 ? Math.round((closed / total) * 100) : 0;
+  const newRate        = total > 0 ? Math.round((newCount / total) * 100) : 0;
+  const assignedRate   = total > 0 ? Math.round((assigned / total) * 100) : 0;
+  const unresolvedRate = total > 0 ? Math.round((unresolved / total) * 100) : 0;
+
+  // Real Neon DB Priority breakdown
+  const priorities = {
+    LOW:    tickets.filter(t => t.priority === 'LOW').length,
+    MEDIUM: tickets.filter(t => t.priority === 'MEDIUM').length,
+    HIGH:   tickets.filter(t => t.priority === 'HIGH').length,
+    URGENT: tickets.filter(t => t.priority === 'URGENT').length
+  };
+
+  // Real breakdown by category from Neon DB
+  const categoriesBreakdown = CATEGORIES.map(cat => {
+    const count = tickets.filter(t => t.categoryId === cat.id).length;
+    const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
+    return {
+      id: cat.id,
+      name: cat.name,
+      icon: cat.icon,
+      count,
+      percentage
+    };
+  }).sort((a, b) => b.count - a.count);
+
+  return {
+    total,
+    newCount,
+    assigned,
+    closed,
+    unresolved,
+    open,
+    resolutionRate,
+    newRate,
+    assignedRate,
+    unresolvedRate,
+    priorities,
+    categories: categoriesBreakdown,
+    isConnected: isBackendConnected,
+    lastSync: lastSyncTimestamp
+  };
 }
 
-// ── Formatação de Data ──
+// ── Date Formatting Helpers ──
 function formatDate(dateStr) {
+  if (!dateStr) return '-';
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return '-';
   return date.toLocaleDateString('pt-BR', {
     day: '2-digit',
     month: '2-digit',
@@ -112,7 +128,9 @@ function formatDate(dateStr) {
 }
 
 function formatDateTime(dateStr) {
+  if (!dateStr) return '-';
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return '-';
   return date.toLocaleDateString('pt-BR', {
     day: '2-digit',
     month: '2-digit',
@@ -123,8 +141,10 @@ function formatDateTime(dateStr) {
 }
 
 function formatTimeAgo(dateStr) {
+  if (!dateStr) return '-';
   const now = new Date();
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return '-';
   const diffMs = now - date;
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
@@ -135,4 +155,59 @@ function formatTimeAgo(dateStr) {
   if (diffHours < 24) return `${diffHours}h atrás`;
   if (diffDays < 7) return `${diffDays}d atrás`;
   return formatDate(dateStr);
+}
+
+/**
+ * Load all application data from the Neon backend API.
+ * Synchronizes tickets, users, categories and notifications.
+ * @returns {Promise<boolean>} True if loaded successfully, false on error
+ */
+async function loadAppData() {
+  try {
+    const [ticketsData, usersData, categoriesData, notificationsData] = await Promise.all([
+      Api.fetchTickets(),
+      Api.fetchUsers(),
+      Api.fetchCategories(),
+      Api.fetchNotifications().catch(err => {
+        console.warn('Could not load notifications from backend:', err);
+        return [];
+      })
+    ]);
+
+    tickets = Array.isArray(ticketsData) ? ticketsData : [];
+    USERS = Array.isArray(usersData) ? usersData : [];
+    CATEGORIES = Array.isArray(categoriesData) ? categoriesData : [];
+    notifications = Array.isArray(notificationsData) ? notificationsData : [];
+
+    isBackendConnected = true;
+    lastSyncTimestamp = new Date();
+    return true;
+  } catch (error) {
+    console.error('Error loading app data from backend:', error);
+    isBackendConnected = false;
+    return false;
+  }
+}
+
+/**
+ * Reload only tickets and notifications from the API (after CRUD operations)
+ * @returns {Promise<boolean>}
+ */
+async function reloadTickets() {
+  try {
+    const [ticketsData, notificationsData] = await Promise.all([
+      Api.fetchTickets(),
+      Api.fetchNotifications().catch(() => notifications)
+    ]);
+
+    tickets = Array.isArray(ticketsData) ? ticketsData : [];
+    notifications = Array.isArray(notificationsData) ? notificationsData : [];
+
+    isBackendConnected = true;
+    lastSyncTimestamp = new Date();
+    return true;
+  } catch (error) {
+    console.error('Error reloading tickets from backend:', error);
+    return false;
+  }
 }
