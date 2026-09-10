@@ -23,7 +23,7 @@ public class TicketHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
-            HttpHelper.sendJson(exchange, 204, "");
+            HttpHelper.sendOptions(exchange);
             return;
         }
 

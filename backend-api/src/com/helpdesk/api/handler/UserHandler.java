@@ -19,14 +19,14 @@ public class UserHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
-            HttpHelper.sendJson(exchange, 204, "");
+            HttpHelper.sendOptions(exchange);
             return;
         }
 
         String path = exchange.getRequestURI().getPath();
 
         try {
-            if ("GET".equalsIgnoreCase(exchange.getRequestMethod()) && "/api/users".equals(path)) {
+            if ("GET".equalsIgnoreCase(exchange.getRequestMethod()) && (path.equals("/api/users") || path.equals("/users"))) {
                 // Lista de usuários (usado para atribuição)
                 String authHeader = exchange.getRequestHeaders().getFirst("Authorization");
                 if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -42,7 +42,7 @@ public class UserHandler implements HttpHandler {
 
                 List<User> users = userDao.findAll();
                 HttpHelper.sendJson(exchange, 200, users);
-            } else if ("POST".equalsIgnoreCase(exchange.getRequestMethod()) && "/api/register".equals(path)) {
+            } else if ("POST".equalsIgnoreCase(exchange.getRequestMethod()) && (path.equals("/api/register") || path.equals("/register"))) {
                 // Registro (público)
                 String body = HttpHelper.readBody(exchange);
                 Map<String, String> data = JsonUtil.fromJson(body, Map.class);

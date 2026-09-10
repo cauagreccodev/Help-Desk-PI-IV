@@ -18,17 +18,29 @@ public class Main {
             // Inicializa a conexão com o banco
             Database.init();
 
-            // Configura servidor na porta 8000
+            // Configura servidor na porta dinâmica (PORT env do Render) ou 8000
             int port = 8000;
+            String envPort = System.getenv("PORT");
+            if (envPort != null && !envPort.isEmpty()) {
+                try {
+                    port = Integer.parseInt(envPort);
+                } catch (NumberFormatException ignored) {}
+            }
             HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
-            // Rotas da API
+            // Rotas da API (suporta com e sem /api)
             server.createContext("/api/login", new LoginHandler());
+            server.createContext("/login", new LoginHandler());
             server.createContext("/api/register", new UserHandler());
+            server.createContext("/register", new UserHandler());
             server.createContext("/api/users", new UserHandler());
+            server.createContext("/users", new UserHandler());
             server.createContext("/api/categorias", new CategoryHandler());
+            server.createContext("/categorias", new CategoryHandler());
             server.createContext("/api/chamados", new TicketHandler());
+            server.createContext("/chamados", new TicketHandler());
             server.createContext("/api/notificacoes", new NotificationHandler());
+            server.createContext("/notificacoes", new NotificationHandler());
 
             // Executa com um thread pool para lidar com múltiplas requisições simultâneas
             server.setExecutor(Executors.newFixedThreadPool(10));
