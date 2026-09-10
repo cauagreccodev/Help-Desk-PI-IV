@@ -641,8 +641,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (userStr) {
         try {
             const user = JSON.parse(userStr);
-            // Atualiza o CURRENT_USER globalmente
-            window.CURRENT_USER = user;
+            const name = user.name || user.nome || 'Usuário';
+            const initials = name
+                .split(' ')
+                .filter(Boolean)
+                .map(n => n[0])
+                .slice(0, 2)
+                .join('')
+                .toUpperCase() || 'HD';
+
+            CURRENT_USER = {
+                id: user.id || 1,
+                nome: name,
+                email: user.email || '',
+                cargo: user.jobTitle || user.cargo || (user.role === 'admin' ? 'Administrador' : user.role === 'tecnico' ? 'Técnico' : 'Colaborador'),
+                departamento: user.department || user.departamento || 'Geral',
+                perfil: user.role || user.perfil || 'usuario',
+                iniciais: initials
+            };
+            window.CURRENT_USER = CURRENT_USER;
         } catch (e) {
             console.error("Erro ao fazer parse do usuário", e);
         }

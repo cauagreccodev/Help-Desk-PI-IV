@@ -114,6 +114,7 @@ public class UserDao {
             }
         } catch (SQLException e) {
             System.err.println("Erro ao inserir usuário: " + e.getMessage());
+            e.printStackTrace();
         } finally {
             Database.releaseConnection(conn);
         }

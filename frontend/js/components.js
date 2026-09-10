@@ -74,10 +74,10 @@ function renderSidebar() {
 
       <div class="sidebar__footer">
         <div class="sidebar__user" id="sidebarUser">
-          <div class="sidebar__user-avatar">${CURRENT_USER.iniciais}</div>
+          <div class="sidebar__user-avatar">${CURRENT_USER?.iniciais || 'HD'}</div>
           <div class="sidebar__user-info">
-            <div class="sidebar__user-name">${CURRENT_USER.nome}</div>
-            <div class="sidebar__user-role">${CURRENT_USER.cargo}</div>
+            <div class="sidebar__user-name">${CURRENT_USER?.nome || 'Usuário'}</div>
+            <div class="sidebar__user-role">${CURRENT_USER?.cargo || 'Colaborador'}</div>
           </div>
         </div>
       </div>
@@ -128,13 +128,13 @@ function renderHeader(breadcrumbs) {
           </div>
         </div>
         <div class="header__dropdown-wrapper">
-          <div class="header__avatar" id="profileBtn" title="${CURRENT_USER.nome}">${CURRENT_USER.iniciais}</div>
+          <div class="header__avatar" id="profileBtn" title="${CURRENT_USER?.nome || 'Usuário'}">${CURRENT_USER?.iniciais || 'HD'}</div>
           <div class="header__dropdown header__dropdown--profile" id="profileDropdown">
             <div class="dropdown__profile-header">
-              <div class="dropdown__profile-avatar">${CURRENT_USER.iniciais}</div>
+              <div class="dropdown__profile-avatar">${CURRENT_USER?.iniciais || 'HD'}</div>
               <div class="dropdown__profile-info">
-                <div class="dropdown__profile-name">${CURRENT_USER.nome}</div>
-                <div class="dropdown__profile-email">${CURRENT_USER.email}</div>
+                <div class="dropdown__profile-name">${CURRENT_USER?.nome || 'Usuário'}</div>
+                <div class="dropdown__profile-email">${CURRENT_USER?.email || ''}</div>
               </div>
             </div>
             <div class="dropdown__divider"></div>
@@ -143,15 +143,14 @@ function renderHeader(breadcrumbs) {
                 ${Icons.settings}
                 <span>Configurações</span>
               </button>
-              <button class="dropdown__menu-item" id="profileGoUser">
-                ${Icons.user}
-                <span>Meu Perfil</span>
+              <button class="dropdown__menu-item dropdown__menu-item--danger" id="logoutBtn">
+                ${Icons.logOut}
+                <span>Sair</span>
               </button>
             </div>
-            <div class="dropdown__divider"></div>
-            <div class="dropdown__footer">
-              <span class="dropdown__footer-role">${Icons.shieldCheck} ${CURRENT_USER.perfil === 'admin' ? 'Administrador' : CURRENT_USER.perfil === 'tecnico' ? 'Técnico' : 'Usuário'}</span>
-              <span class="dropdown__footer-dept">${CURRENT_USER.departamento}</span>
+            <div class="dropdown__profile-footer">
+              <span class="dropdown__footer-role">${Icons.shieldCheck} ${CURRENT_USER?.perfil === 'admin' ? 'Administrador' : CURRENT_USER?.perfil === 'tecnico' ? 'Técnico' : 'Usuário'}</span>
+              <span class="dropdown__footer-dept">${CURRENT_USER?.departamento || ''}</span>
             </div>
           </div>
         </div>
@@ -703,21 +702,21 @@ function renderConfiguracoes() {
           </div>
           <div class="settings-card__body">
             <div class="profile-info">
-              <div class="profile-avatar">${CURRENT_USER.iniciais}</div>
+              <div class="profile-avatar">${CURRENT_USER?.iniciais || 'HD'}</div>
               <div class="profile-details">
-                <div class="profile-name">${CURRENT_USER.nome}</div>
-                <div class="profile-role">${CURRENT_USER.cargo}</div>
-                <div class="profile-email">${CURRENT_USER.email}</div>
+                <div class="profile-name">${CURRENT_USER?.nome || 'Usuário'}</div>
+                <div class="profile-role">${CURRENT_USER?.cargo || 'Colaborador'}</div>
+                <div class="profile-email">${CURRENT_USER?.email || ''}</div>
               </div>
             </div>
             <div style="margin-top:var(--space-5); display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
               <div>
                 <span class="info-item__label">Departamento</span>
-                <span class="info-item__value">${CURRENT_USER.departamento}</span>
+                <span class="info-item__value">${CURRENT_USER?.departamento || '-'}</span>
               </div>
               <div>
                 <span class="info-item__label">Perfil</span>
-                <span class="info-item__value" style="text-transform:capitalize">${CURRENT_USER.perfil === 'admin' ? 'Administrador' : CURRENT_USER.perfil === 'tecnico' ? 'Técnico' : 'Usuário'}</span>
+                <span class="info-item__value" style="text-transform:capitalize">${CURRENT_USER?.perfil === 'admin' ? 'Administrador' : CURRENT_USER?.perfil === 'tecnico' ? 'Técnico' : 'Usuário'}</span>
               </div>
             </div>
           </div>

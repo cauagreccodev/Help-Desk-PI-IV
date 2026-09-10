@@ -10,6 +10,12 @@ node_modules/
 Thumbs.db
 desktop.ini
 .venv/
+venv/
+env/
+*.py
+*.pyc
+__pycache__/
+*.sql
 
 # Logs
 *.log
